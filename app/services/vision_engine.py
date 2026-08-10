@@ -7,17 +7,54 @@ from PIL import Image
 from typing import Tuple
 
 from app.schemas.vision import VisionAnalysisResult, DICOMHeaderMetadata, FindingScore
-from app.core.logging import logger
+from app.core.logging import get_logger
 from app.core.exceptions import DICOMProcessingError
+from app.core.interfaces import VisionAnalysisService, ServiceHealthStatus, ServiceAvailability
+from app.core.validation import validate_image_bytes
+from app.core.config import settings
+
+logger = get_logger(__name__)
 
 
-class VisionEngine:
+class VisionEngine(VisionAnalysisService):
     """Diagnostic Computer Vision Classifier with Grad-CAM Explainability."""
+
+    _SERVICE_NAME = "CarePath Vision Engine"
+    _SERVICE_VERSION = "0.1.0"
 
     def __init__(self):
         self._torch_available = False
         self._transform = None
         self._init_models()
+
+    # ------------------------------------------------------------------
+    # Interface: BaseAIService
+    # ------------------------------------------------------------------
+
+    def health_check(self) -> ServiceHealthStatus:
+        """Return current Vision backend availability."""
+        if self._torch_available:
+            return ServiceHealthStatus(
+                availability=ServiceAvailability.AVAILABLE,
+                backend="pytorch",
+                message="PyTorch Medical Vision Engine is active.",
+            )
+        return ServiceHealthStatus(
+            availability=ServiceAvailability.DEGRADED,
+            backend="numpy_heuristic",
+            message="Running in NumPy heuristic mode; PyTorch unavailable.",
+        )
+
+    def get_service_info(self) -> dict:
+        """Return metadata about this Vision engine instance."""
+        health = self.health_check()
+        return {
+            "name": self._SERVICE_NAME,
+            "version": self._SERVICE_VERSION,
+            "status": health.availability.value,
+            "backend": health.backend,
+            "confidence_threshold": settings.VISION_CONFIDENCE_THRESHOLD,
+        }
 
     def _init_models(self):
         """Initialize PyTorch vision classification pipeline if available."""
@@ -71,6 +108,7 @@ class VisionEngine:
 
     def analyze_image(self, image_bytes: bytes, filename: str = "chest_xray.dcm") -> VisionAnalysisResult:
         """Run computer vision diagnostic analysis and generate heatmap."""
+        validate_image_bytes(image_bytes, max_mb=settings.MAX_UPLOAD_SIZE_MB)
         start_time = time.time()
         img, dicom_meta, is_dicom = self.parse_dicom_bytes(image_bytes)
 

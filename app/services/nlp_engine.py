@@ -3,11 +3,19 @@ import re
 import time
 from typing import List
 from app.schemas.nlp import BioNERResult, MedicalEntity
-from app.core.logging import logger
+from app.core.logging import get_logger
+from app.core.interfaces import EntityExtractionService, ServiceHealthStatus, ServiceAvailability
+from app.core.validation import validate_text_input
+from app.core.config import settings
+
+logger = get_logger(__name__)
 
 
-class BioNEREngine:
+class BioNEREngine(EntityExtractionService):
     """Clinical Named Entity Recognition & Coding Engine."""
+
+    _SERVICE_NAME = "CarePath Bio-NER Engine"
+    _SERVICE_VERSION = "0.1.0"
 
     # Medical terminology dictionaries with ICD-10 codification
     ICD10_MAP = {
@@ -30,8 +38,32 @@ class BioNEREngine:
     def __init__(self):
         logger.info("Bio-NER Engine initialized.")
 
+    # ------------------------------------------------------------------
+    # Interface: BaseAIService
+    # ------------------------------------------------------------------
+
+    def health_check(self) -> ServiceHealthStatus:
+        """Return health status — always AVAILABLE (pure Python, no external deps)."""
+        return ServiceHealthStatus(
+            availability=ServiceAvailability.AVAILABLE,
+            backend="regex_icd10_map",
+            message="Bio-NER regex/ICD-10 engine is active.",
+        )
+
+    def get_service_info(self) -> dict:
+        """Return metadata about this NLP engine instance."""
+        return {
+            "name": self._SERVICE_NAME,
+            "version": self._SERVICE_VERSION,
+            "status": ServiceAvailability.AVAILABLE.value,
+            "backend": "regex_icd10_map",
+            "entity_count": len(self.ICD10_MAP),
+            "confidence_threshold": settings.NLP_CONFIDENCE_THRESHOLD,
+        }
+
     def extract_entities(self, text: str) -> BioNERResult:
         """Extract medical entities, symptoms, medications, and ICD-10 codification."""
+        validate_text_input(text, min_len=1, max_len=32_768)
         start_time = time.time()
         entities: List[MedicalEntity] = []
         symptoms: List[str] = []

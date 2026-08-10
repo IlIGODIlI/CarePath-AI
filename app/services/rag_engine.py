@@ -3,11 +3,18 @@ import time
 from typing import List
 from app.schemas.rag import RAGQueryResponse, DocumentChunk
 from app.core.config import settings
-from app.core.logging import logger
+from app.core.logging import get_logger
+from app.core.interfaces import KnowledgeRetrievalService, ServiceHealthStatus, ServiceAvailability
+from app.core.validation import validate_text_input, validate_top_k
+
+logger = get_logger(__name__)
 
 
-class RAGKnowledgeEngine:
+class RAGKnowledgeEngine(KnowledgeRetrievalService):
     """Medical RAG Engine for Clinical Guideline Retrieval."""
+
+    _SERVICE_NAME = "CarePath RAG Knowledge Engine"
+    _SERVICE_VERSION = "0.1.0"
 
     # Built-in reference clinical practice guidelines
     KNOWLEDGE_BASE = [
@@ -34,6 +41,42 @@ class RAGKnowledgeEngine:
     def __init__(self):
         self._init_vector_db()
 
+    # ------------------------------------------------------------------
+    # Interface: BaseAIService
+    # ------------------------------------------------------------------
+
+    def health_check(self) -> ServiceHealthStatus:
+        """Return current RAG backend availability."""
+        if getattr(self, "_chroma_ready", False):
+            return ServiceHealthStatus(
+                availability=ServiceAvailability.AVAILABLE,
+                backend="chromadb",
+                message="ChromaDB vector store is active.",
+            )
+        return ServiceHealthStatus(
+            availability=ServiceAvailability.DEGRADED,
+            backend="keyword_fallback",
+            message="Running in keyword-ranking fallback mode; ChromaDB unavailable.",
+        )
+
+    def get_service_info(self) -> dict:
+        """Return metadata about this RAG engine instance."""
+        health = self.health_check()
+        doc_count = len(self.KNOWLEDGE_BASE)
+        if getattr(self, "_chroma_ready", False):
+            try:
+                doc_count = self._collection.count()
+            except Exception:
+                pass
+        return {
+            "name": self._SERVICE_NAME,
+            "version": self._SERVICE_VERSION,
+            "status": health.availability.value,
+            "backend": health.backend,
+            "collection": settings.CHROMA_COLLECTION_NAME,
+            "indexed_documents": doc_count,
+        }
+
     def _init_vector_db(self):
         """Initialize local vector database (ChromaDB)."""
         try:
@@ -54,7 +97,9 @@ class RAGKnowledgeEngine:
             self._chroma_ready = False
 
     def query_guidelines(self, query: str, top_k: int = 3) -> RAGQueryResponse:
-        """Search medical guidelines and synthesize evidence-based answer."""
+        """Search medical guidelines and synthesise evidence-based answer."""
+        validate_text_input(query, min_len=1, max_len=4096)
+        validate_top_k(top_k, min_k=1, max_k=10)
         start_time = time.time()
         retrieved_chunks: List[DocumentChunk] = []
 

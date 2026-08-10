@@ -7,16 +7,53 @@ from PIL import Image
 from typing import List
 
 from app.schemas.ocr import OCRResult, LabMetricItem, PrescriptionItem, ExtractedTextLine, BoundingBox
-from app.core.logging import logger
+from app.core.logging import get_logger
 from app.core.exceptions import OCRExtractionError
+from app.core.interfaces import TextExtractionService, ServiceHealthStatus, ServiceAvailability
+from app.core.validation import validate_image_bytes
+from app.core.config import settings
+
+logger = get_logger(__name__)
 
 
-class OCREngine:
+class OCREngine(TextExtractionService):
     """Multi-modal OCR and Document Understanding Engine."""
+
+    _SERVICE_NAME = "CarePath OCR Engine"
+    _SERVICE_VERSION = "0.1.0"
 
     def __init__(self):
         self._ocr_backend = None
         self._init_backend()
+
+    # ------------------------------------------------------------------
+    # Interface: BaseAIService
+    # ------------------------------------------------------------------
+
+    def health_check(self) -> ServiceHealthStatus:
+        """Return current OCR backend availability."""
+        if self._ocr_backend == "easyocr":
+            return ServiceHealthStatus(
+                availability=ServiceAvailability.AVAILABLE,
+                backend="easyocr",
+                message="EasyOCR backend is active.",
+            )
+        return ServiceHealthStatus(
+            availability=ServiceAvailability.DEGRADED,
+            backend="python_fallback",
+            message="Running in pure-Python fallback mode; EasyOCR unavailable.",
+        )
+
+    def get_service_info(self) -> dict:
+        """Return metadata about this OCR engine instance."""
+        health = self.health_check()
+        return {
+            "name": self._SERVICE_NAME,
+            "version": self._SERVICE_VERSION,
+            "status": health.availability.value,
+            "backend": self._ocr_backend,
+            "min_confidence_threshold": settings.OCR_MIN_CONFIDENCE,
+        }
 
     def _init_backend(self):
         """Lazy load available OCR backends (EasyOCR / PyTesseract with fallback)."""
@@ -40,6 +77,7 @@ class OCREngine:
 
     def extract_text(self, image_bytes: bytes, filename: str = "document.png") -> OCRResult:
         """Run OCR extraction and structure medical data."""
+        validate_image_bytes(image_bytes, max_mb=settings.MAX_UPLOAD_SIZE_MB)
         start_time = time.time()
         img_np = self.preprocess_image(image_bytes)
 
