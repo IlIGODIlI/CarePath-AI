@@ -36,9 +36,9 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="w-full py-12 px-6 flex flex-col items-center">
+    <div className="w-full py-6 md:py-8 px-6 flex flex-col items-center animate-in fade-in duration-500">
       {/* Hero Section */}
-      <div className="max-w-4xl text-center flex flex-col items-center mt-8 md:mt-16 mb-20">
+      <div className="max-w-4xl text-center flex flex-col items-center mt-2 md:mt-4 mb-12">
         {/* Decorative Badge */}
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-lavender-light text-brand-lavender text-xs font-semibold tracking-wide uppercase mb-6">
           <Heart className="w-3.5 h-3.5 fill-current" />

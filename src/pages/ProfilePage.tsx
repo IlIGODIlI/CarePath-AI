@@ -56,12 +56,6 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-brand-plum">Patient Context</h1>
-        <p className="text-brand-slate text-sm">
-          Keep your medical history and current status updated to help CarePath provide accurate specialist routing.
-        </p>
-      </div>
 
       {successMessage && (
         <div className="bg-brand-sage-bg border border-brand-sage-text/10 text-brand-sage-text p-4 rounded-xl text-sm flex items-center gap-2.5 shadow-sm">

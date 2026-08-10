@@ -141,15 +141,8 @@ export default function TimelinePage() {
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6 relative">
-      {/* Top Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-brand-plum">My Care Journey</h1>
-          <p className="text-brand-slate text-sm">
-            Your clinical timeline, tracking all events, uploads, referrals, and check-ins.
-          </p>
-        </div>
-
+      {/* Action Row */}
+      <div className="flex justify-end">
         <button
           onClick={() => setModalOpen(true)}
           className="flex items-center justify-center gap-1.5 bg-brand-lavender hover:bg-brand-lavender-hover text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
@@ -204,7 +197,7 @@ export default function TimelinePage() {
                 <div className="bg-brand-card border border-brand-slate/10 p-5 rounded-2xl shadow-xs hover:border-brand-lavender/35 transition-all">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
                     <h3 className="font-display font-semibold text-sm text-brand-plum">{event.title}</h3>
-                    <span className="text-xxxxs text-brand-slate/70">
+                    <span className="text-xxs text-brand-slate/70">
                       {new Date(event.timestamp).toLocaleDateString(undefined, { 
                         weekday: 'short', 
                         month: 'short', 
@@ -221,7 +214,7 @@ export default function TimelinePage() {
                   </p>
 
                   {event.details && (
-                    <div className="bg-brand-bg/60 border border-brand-slate/5 p-3 rounded-xl text-xxs text-brand-plum leading-relaxed font-light italic">
+                    <div className="bg-brand-bg/60 border border-brand-slate/5 p-3 rounded-xl text-xs text-brand-plum leading-relaxed font-light italic">
                       {event.details}
                     </div>
                   )}

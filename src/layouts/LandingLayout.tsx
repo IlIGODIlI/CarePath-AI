@@ -35,7 +35,7 @@ export default function LandingLayout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col justify-center items-center">
+      <main className="flex-1 flex flex-col justify-start items-center pt-2 md:pt-4">
         <Outlet />
       </main>
 

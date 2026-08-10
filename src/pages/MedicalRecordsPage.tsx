@@ -108,13 +108,6 @@ export default function MedicalRecordsPage() {
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
-      {/* Page Title */}
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-brand-plum">Medical Records</h1>
-        <p className="text-brand-slate text-sm">
-          A library of all clinical images, reports, and prescriptions uploaded to your profile.
-        </p>
-      </div>
 
       {error && (
         <div className="bg-brand-rose-bg border border-brand-rose-text/10 text-brand-rose-text p-4 rounded-xl text-sm flex items-center justify-between">
@@ -179,30 +172,30 @@ export default function MedicalRecordsPage() {
                         <Icon className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <h3 className="font-display font-semibold text-xs text-brand-plum max-w-[200px] truncate">
+                        <h3 className="font-display font-semibold text-sm text-brand-plum max-w-[200px] truncate">
                           {rec.title}
                         </h3>
-                        <span className="text-xxxxs text-brand-slate/75 block mt-0.5">
+                        <span className="text-xxs text-brand-slate/75 block mt-0.5">
                           {rec.file_name}
                         </span>
                       </div>
                     </div>
 
-                    <span className="text-xxxxs font-bold text-brand-slate uppercase tracking-wider bg-brand-bg px-2.5 py-1 rounded-full shrink-0">
+                    <span className="text-xxs font-bold text-brand-slate uppercase tracking-wider bg-brand-bg px-2.5 py-1 rounded-full shrink-0">
                       {rec.type}
                     </span>
                   </div>
 
                   {rec.summary && (
-                    <div className="bg-brand-bg/50 p-3 rounded-xl border border-brand-slate/5 text-xxs text-brand-plum leading-relaxed font-light mb-4">
-                      <span className="font-bold text-xxxxs text-brand-slate uppercase block mb-1">Extracted Summary</span>
+                    <div className="bg-brand-bg/50 p-3 rounded-xl border border-brand-slate/5 text-xs text-brand-plum leading-relaxed font-light mb-4">
+                      <span className="font-bold text-xxs text-brand-slate uppercase block mb-1">Extracted Summary</span>
                       "{rec.summary}"
                     </div>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between border-t border-brand-slate/5 pt-3.5 mt-2">
-                  <div className="flex items-center gap-1.5 text-xxxxs text-brand-slate">
+                  <div className="flex items-center gap-1.5 text-xxs text-brand-slate">
                     <Clock className="w-3.5 h-3.5" />
                     {new Date(rec.created_at).toLocaleDateString()}
                   </div>

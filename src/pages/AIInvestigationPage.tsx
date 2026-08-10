@@ -114,18 +114,13 @@ export default function AIInvestigationPage() {
   }, [analysisId, isDemo, navigate]);
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col gap-8">
-      {/* Header section */}
-      <div className="text-center py-6 flex flex-col items-center">
-        <div className="w-14 h-14 rounded-2xl bg-brand-lavender-light text-brand-lavender flex items-center justify-center mb-6 animate-pulse">
-          <Sparkles className="w-7 h-7 fill-current" />
+    <div className="max-w-4xl mx-auto flex flex-col gap-6">
+      {/* Pulse Icon & Status */}
+      <div className="flex flex-col items-center justify-center text-center mt-2 mb-4">
+        <div className="w-12 h-12 rounded-xl bg-brand-lavender-light text-brand-lavender flex items-center justify-center mb-3 animate-pulse">
+          <Sparkles className="w-6 h-6 fill-current" />
         </div>
-        <h1 className="font-display text-3xl font-bold text-brand-plum mb-3">
-          CarePath is mapping your journey
-        </h1>
-        <p className="text-brand-slate text-sm max-w-md leading-relaxed font-light">
-          Our specialized clinical reasoning agents are reading your history, extracting report findings, and preparing specialist recommendations.
-        </p>
+        <p className="text-xs text-brand-slate font-light">Analyzing medical history & uploaded records...</p>
       </div>
 
       {error && (
@@ -170,7 +165,7 @@ export default function AIInvestigationPage() {
                   <Icon className={`w-4 h-4 shrink-0 ${state.status === 'running' ? 'animate-spin' : ''}`} />
                   <div>
                     <h4 className="text-xs font-semibold">{agentName} Agent</h4>
-                    <p className="text-xxxxs opacity-80 mt-0.5 max-w-[150px] truncate">
+                    <p className="text-xxs opacity-80 mt-0.5 max-w-[180px] truncate">
                       {state.message || (state.status === 'idle' ? 'Pending activation' : 'Workflow in queue')}
                     </p>
                   </div>

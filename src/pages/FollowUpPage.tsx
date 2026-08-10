@@ -107,13 +107,6 @@ export default function FollowUpPage() {
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
-      {/* Page Title */}
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-brand-plum">Follow-up & Recovery</h1>
-        <p className="text-brand-slate text-sm">
-          Log how you are feeling and keep track of your diagnostic recovery milestones.
-        </p>
-      </div>
 
       {successMsg && (
         <div className="bg-brand-sage-bg border border-brand-sage-text/10 text-brand-sage-text p-4 rounded-xl text-sm flex items-center gap-2">
@@ -198,7 +191,7 @@ export default function FollowUpPage() {
                     <span className="text-xxs font-bold text-brand-sage-text bg-brand-sage-bg px-2.5 py-0.5 rounded-full">
                       Logged Check-in
                     </span>
-                    <span className="text-xxxxs text-brand-slate/75">
+                    <span className="text-xxs text-brand-slate/75">
                       {new Date(log.check_in_date).toLocaleDateString(undefined, { 
                         month: 'short', 
                         day: 'numeric',
@@ -211,7 +204,7 @@ export default function FollowUpPage() {
 
                   <div className="flex flex-col gap-2 pl-1">
                     <div>
-                      <span className="text-xxxxs font-bold text-brand-slate uppercase block">Symptoms Status</span>
+                      <span className="text-xxs font-bold text-brand-slate uppercase block">Symptoms Status</span>
                       <p className="text-xs text-brand-plum leading-relaxed font-light mt-0.5">
                         {log.symptoms_logged}
                       </p>
@@ -219,8 +212,8 @@ export default function FollowUpPage() {
 
                     {log.notes && (
                       <div>
-                        <span className="text-xxxxs font-bold text-brand-slate uppercase block">Additional Notes</span>
-                        <p className="text-xxs text-brand-slate leading-relaxed font-light mt-0.5 italic">
+                        <span className="text-xxs font-bold text-brand-slate uppercase block">Additional Notes</span>
+                        <p className="text-xs text-brand-slate leading-relaxed font-light mt-0.5 italic">
                           {log.notes}
                         </p>
                       </div>

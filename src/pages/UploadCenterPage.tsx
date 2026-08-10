@@ -113,7 +113,7 @@ function FileWidget({ title, description, type, accept, icon: Icon, onUploadSucc
               onChange={handleFileInput} 
             />
           </label>
-          <span className="text-xxxxs text-brand-slate/60 mt-2">Accepted formats: {accept}</span>
+          <span className="text-xxs text-brand-slate/60 mt-2">Accepted formats: {accept}</span>
         </>
       )}
 
@@ -201,12 +201,6 @@ export default function UploadCenterPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-brand-plum">Upload Center</h1>
-        <p className="text-brand-slate text-sm">
-          Submit your medical images, lab letters, or prescription script copies to initiate an advisory care journey mapping.
-        </p>
-      </div>
 
       {analysisError && (
         <div className="bg-brand-rose-bg border border-brand-rose-text/10 text-brand-rose-text p-4 rounded-xl text-sm flex items-center gap-2.5">

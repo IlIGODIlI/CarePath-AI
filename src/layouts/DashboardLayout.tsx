@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { usePatient } from '../context/PatientContext';
+import { useAuth } from '../context/AuthContext';
 import { 
   Heart, 
   LayoutDashboard, 
@@ -8,7 +10,6 @@ import {
   FolderOpen, 
   CalendarCheck, 
   Bell, 
-  User, 
   UploadCloud, 
   LogOut, 
   Menu, 
@@ -18,12 +19,22 @@ import {
 export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { patient } = usePatient();
+  const { user } = useAuth();
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const isBypassEnabled = !import.meta.env.PROD && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+  const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem('carepath_sidebar_collapsed') === 'true');
 
   // Example active route check
   const isActive = (path: string) => location.pathname === path;
+
+  const toggleSidebar = () => {
+    setIsCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('carepath_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
 
   const handleLogout = () => {
     // Implement token clearing here
@@ -43,8 +54,73 @@ export default function DashboardLayout() {
 
   const secondaryItems = [
     { name: 'Notifications', path: '/notifications', icon: Bell },
-    { name: 'Profile', path: '/profile', icon: User },
   ];
+
+  // Helper to map paths to titles/subtitles
+  const getHeaderDetails = () => {
+    const path = location.pathname;
+    if (path === '/dashboard') {
+      return {
+        title: 'Dashboard',
+        subtitle: 'Overview of your active care journey and next steps.'
+      };
+    }
+    if (path === '/journey') {
+      return {
+        title: 'My Care Journey',
+        subtitle: 'Chronological timeline of your clinical events, uploads, and check-ins.'
+      };
+    }
+    if (path === '/analysis') {
+      return {
+        title: 'AI Analysis',
+        subtitle: 'Evidence-backed specialist matching and clinical reasoning reports.'
+      };
+    }
+    if (path === '/analysis/processing') {
+      return {
+        title: 'AI Analysis Processing',
+        subtitle: 'CarePath multi-agent routing engines are processing your context.'
+      };
+    }
+    if (path === '/upload') {
+      return {
+        title: 'Upload Center',
+        subtitle: 'Submit medical imaging, lab reports, or medication prescriptions.'
+      };
+    }
+    if (path === '/records') {
+      return {
+        title: 'Medical Records',
+        subtitle: 'Your organized library of extracted clinical documents and scripts.'
+      };
+    }
+    if (path === '/followup' || path === '/follow-up') {
+      return {
+        title: 'Follow-up Tracker',
+        subtitle: 'Record daily symptom status and log recovery check-ins.'
+      };
+    }
+    if (path === '/notifications') {
+      return {
+        title: 'Notifications',
+        subtitle: 'Stay informed of agent outputs, completions, and scheduling updates.'
+      };
+    }
+    if (path === '/profile') {
+      return {
+        title: 'Patient Profile',
+        subtitle: 'Manage your personal details, allergies, and medical history summary.'
+      };
+    }
+    return {
+      title: 'CarePath Navigator',
+      subtitle: 'Right Guidance. Right Specialist. Right Time.'
+    };
+  };
+
+  const { title: pageTitle, subtitle: pageSubtitle } = getHeaderDetails();
+  const patientName = patient?.name || user?.name || 'Patient';
 
   return (
     <div className="min-h-screen flex bg-brand-bg font-sans text-brand-plum">
@@ -57,7 +133,7 @@ export default function DashboardLayout() {
         <div className="flex flex-col gap-8">
           {/* Logo acting as toggle */}
           <button 
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={toggleSidebar}
             className={`flex items-center gap-2.5 group cursor-pointer text-left focus:outline-none w-full ${
               isCollapsed ? 'justify-center' : ''
             }`}
@@ -153,7 +229,7 @@ export default function DashboardLayout() {
               className={`flex items-center rounded-xl text-sm font-medium text-brand-rose-text hover:bg-brand-rose-bg/50 transition-all text-left mt-1 relative group/link ${
                 isCollapsed 
                   ? 'justify-center w-10 h-10 mx-auto' 
-                  : 'gap-3 px-3 py-2.5 w-full'
+                  : 'gap-3 px-3 py-2.5 w-full font-medium'
               }`}
             >
               <LogOut className="w-4 h-4 text-brand-rose-text shrink-0" />
@@ -241,7 +317,7 @@ export default function DashboardLayout() {
                     setMobileMenuOpen(false);
                     handleLogout();
                   }}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-brand-rose-text hover:bg-brand-rose-bg/50 transition-all text-left w-full mt-1"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-brand-rose-text hover:bg-brand-rose-bg/50 transition-all text-left w-full mt-1 font-medium"
                 >
                   <LogOut className="w-4 h-4" />
                   Sign Out
@@ -254,24 +330,44 @@ export default function DashboardLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out">
-        {/* Mobile Header */}
-        <header className="flex md:hidden items-center justify-between bg-brand-card border-b border-brand-slate/10 px-6 py-4 sticky top-0 z-30">
-          <button 
-            onClick={() => setMobileMenuOpen(true)}
-            className="p-1 rounded-lg hover:bg-brand-bg text-brand-slate"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="font-display font-semibold text-brand-plum flex items-center gap-1.5 focus:outline-none cursor-pointer hover:opacity-85 active:scale-98 transition-all"
-          >
-            <Heart className="w-4 h-4 text-brand-lavender fill-current shrink-0" />
-            <span>CarePath AI</span>
-          </button>
-          <Link to="/notifications" className="p-1 rounded-lg hover:bg-brand-bg text-brand-slate relative">
-            <Bell className="w-5 h-5" />
-          </Link>
+        {/* Page Navbar (Header) */}
+        <header className="bg-brand-card border-b border-brand-slate/10 px-6 py-4 md:px-8 md:py-4.5 sticky top-0 z-30 flex items-center justify-between">
+          {/* Left section: Hamburger (mobile only) + Title & Subtitle */}
+          <div className="flex items-center min-w-0">
+            <button 
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-1 mr-3 rounded-lg hover:bg-brand-bg text-brand-slate cursor-pointer shrink-0"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-base md:text-xl font-bold tracking-tight text-brand-plum font-display truncate">
+                {pageTitle}
+              </h1>
+              {pageSubtitle && (
+                <p className="hidden md:block text-xxs md:text-xs text-brand-slate mt-0.5 font-light truncate">
+                  {pageSubtitle}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Right section: Profile direct navigation link */}
+          <div className="flex items-center gap-3.5 shrink-0">
+            {/* Profile Direct Link */}
+            <Link
+              to="/profile"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-brand-bg text-brand-plum text-sm font-semibold cursor-pointer transition-all active:scale-98 border border-transparent hover:border-brand-slate/10"
+              title="View Patient Profile"
+              aria-label="View Patient Profile"
+            >
+              <div className="w-7 h-7 rounded-full bg-brand-lavender-light text-brand-lavender flex items-center justify-center font-bold text-xs shrink-0 border border-brand-lavender/10">
+                {patientName.charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden sm:inline max-w-[120px] truncate">{patientName}</span>
+            </Link>
+          </div>
         </header>
 
         {/* Dashboard Content Container */}
@@ -279,13 +375,6 @@ export default function DashboardLayout() {
           <Outlet />
         </main>
       </div>
-
-      {isBypassEnabled && (
-        <div className="fixed bottom-4 right-4 z-50 bg-brand-amber-bg border border-brand-amber-text/20 text-brand-amber-text text-xxs font-bold px-3.5 py-2 rounded-full shadow-md flex items-center gap-2 pointer-events-none select-none">
-          <span className="w-2 h-2 rounded-full bg-brand-amber-text animate-pulse shrink-0"></span>
-          <span>Development Mode (Auth Bypass)</span>
-        </div>
-      )}
     </div>
   );
 }

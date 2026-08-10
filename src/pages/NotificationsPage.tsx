@@ -96,19 +96,9 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-6">
-      {/* Title block */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-brand-plum flex items-center gap-2">
-            <Bell className="w-6 h-6 text-brand-lavender" />
-            Notifications
-          </h1>
-          <p className="text-brand-slate text-sm">
-            Updates and guidance alerts concerning your active healthcare journey.
-          </p>
-        </div>
-
-        {unreadCount > 0 && (
+      {/* Action Row */}
+      {unreadCount > 0 && (
+        <div className="flex justify-end">
           <button
             onClick={handleMarkAllAsRead}
             className="flex items-center justify-center gap-1.5 text-xxs font-semibold text-brand-lavender hover:underline cursor-pointer border border-brand-lavender/20 rounded-xl px-4 py-2 bg-brand-card shadow-xs"
@@ -116,8 +106,8 @@ export default function NotificationsPage() {
             <Check className="w-3.5 h-3.5" />
             Mark all read
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {error && (
         <div className="bg-brand-rose-bg border border-brand-rose-text/10 text-brand-rose-text p-4 rounded-xl text-sm flex items-center gap-2.5">
@@ -164,7 +154,7 @@ export default function NotificationsPage() {
                   <h3 className={`text-sm font-semibold ${n.read ? 'text-brand-plum' : 'text-brand-plum font-bold'}`}>
                     {n.title}
                   </h3>
-                  <span className="text-xxxxs text-brand-slate/60 shrink-0 mt-0.5">
+                  <span className="text-[10px] text-brand-slate/60 shrink-0 mt-0.5">
                     {new Date(n.created_at).toLocaleDateString(undefined, { 
                       month: 'short', 
                       day: 'numeric',
@@ -181,7 +171,7 @@ export default function NotificationsPage() {
                 {!n.read && (
                   <button
                     onClick={() => handleMarkAsRead(n.id)}
-                    className="flex items-center gap-1 text-xxxxs text-brand-lavender font-bold mt-2 hover:underline w-fit"
+                    className="flex items-center gap-1 text-xxs text-brand-lavender font-bold mt-2 hover:underline w-fit"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Mark as read

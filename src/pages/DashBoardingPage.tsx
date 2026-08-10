@@ -155,11 +155,11 @@ export default function DashBoardingPage() {
       )}
 
       {/* Hero Welcome */}
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight text-brand-plum mb-1">
-          Welcome back, {patient?.name || user?.name || 'Patient'}
+      <div className="mb-2">
+        <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-brand-plum mb-1">
+          {patient?.name || user?.name ? `Welcome back, ${patient?.name || user?.name}` : 'Welcome back'}
         </h1>
-        <p className="text-brand-slate text-sm">
+        <p className="text-brand-slate text-sm font-light">
           Here is the current state of your autonomous healthcare journey.
         </p>
       </div>
@@ -222,9 +222,9 @@ export default function DashBoardingPage() {
       </div>
 
       {/* Next Step & Explanation Panels */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         {/* Next Step Panel */}
-        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl shadow-sm flex flex-col justify-between h-full">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xxs font-bold tracking-wider text-brand-lavender uppercase bg-brand-lavender-light px-2.5 py-1 rounded-full">
@@ -245,7 +245,7 @@ export default function DashBoardingPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 border-t border-brand-slate/5 pt-4 mt-2">
             {latestAnalysis?.specialist_recommendation ? (
               <Link 
                 to="/analysis"
@@ -267,39 +267,41 @@ export default function DashBoardingPage() {
         </div>
 
         {/* Why This Matters Panel */}
-        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl shadow-sm">
-          <h3 className="font-display text-sm font-bold tracking-wider text-brand-slate uppercase mb-4">
-            Why This Matters
-          </h3>
-          
-          {latestAnalysis?.considered_factors && latestAnalysis.considered_factors.length > 0 ? (
-            <div className="flex flex-col gap-3">
-              <p className="text-xs text-brand-slate leading-relaxed">
-                CarePath reached this guidance by analyzing clinical relationships in your uploaded documents and logged history:
-              </p>
-              <ul className="flex flex-col gap-2">
-                {latestAnalysis.considered_factors.map((factor, idx) => (
-                  <li key={idx} className="flex gap-2.5 items-start text-xs text-brand-plum">
-                    <span className="w-4.5 h-4.5 rounded-full bg-brand-lavender-light text-brand-lavender font-bold flex items-center justify-center shrink-0 text-xxs">
-                      {idx + 1}
-                    </span>
-                    <span>{factor}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Compass className="w-8 h-8 text-brand-slate/40 mb-3" />
-              <p className="text-xs text-brand-slate leading-relaxed max-w-xs">
-                Once documents are analyzed, CarePath lists the critical factors and clinical rationale here.
-              </p>
-            </div>
-          )}
+        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl shadow-sm flex flex-col justify-between h-full">
+          <div className="flex-1 flex flex-col">
+            <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate/75 uppercase mb-4">
+              Why This Matters
+            </h3>
+            
+            {latestAnalysis?.considered_factors && latestAnalysis.considered_factors.length > 0 ? (
+              <div className="flex flex-col gap-3 flex-1">
+                <p className="text-xs text-brand-slate leading-relaxed">
+                  CarePath reached this guidance by analyzing clinical relationships in your uploaded documents and logged history:
+                </p>
+                <ul className="flex flex-col gap-2">
+                  {latestAnalysis.considered_factors.map((factor, idx) => (
+                    <li key={idx} className="flex gap-2.5 items-start text-xs text-brand-plum">
+                      <span className="w-4.5 h-4.5 rounded-full bg-brand-lavender-light text-brand-lavender font-bold flex items-center justify-center shrink-0 text-xxs">
+                        {idx + 1}
+                      </span>
+                      <span>{factor}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center flex-1">
+                <Compass className="w-8 h-8 text-brand-slate/40 mb-3" />
+                <p className="text-xs text-brand-slate leading-relaxed max-w-xs">
+                  Once documents are analyzed, CarePath lists the critical factors and clinical rationale here.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Safety Warning */}
           {latestAnalysis?.safety_alerts && latestAnalysis.safety_alerts.length > 0 && (
-            <div className="mt-5 p-3 rounded-xl bg-brand-rose-bg/75 border border-brand-rose-text/10 text-brand-rose-text text-xxs flex gap-2">
+            <div className="mt-5 p-3 rounded-xl bg-brand-rose-bg/75 border border-brand-rose-text/10 text-brand-rose-text text-xxs flex gap-2 shrink-0">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold">Safety Note: </span>
@@ -311,78 +313,88 @@ export default function DashBoardingPage() {
       </div>
 
       {/* Recent Activity and Records */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         {/* Recent Activity */}
-        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl shadow-sm">
-          <h3 className="font-display text-md font-semibold text-brand-plum mb-4">Recent Activity</h3>
+        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl shadow-sm flex flex-col justify-between h-full animate-in fade-in duration-300">
+          <div className="flex-1 flex flex-col">
+            <h3 className="font-display text-base font-semibold text-brand-plum mb-4">Recent Activity</h3>
+            
+            {timeline.length > 0 ? (
+              <div className="flex flex-col gap-4 flex-1">
+                {timeline.slice(0, 3).map((event) => (
+                  <div key={event.id} className="flex gap-3 items-start border-b border-brand-slate/5 pb-3 last:border-0 last:pb-0">
+                    <div className="w-8 h-8 rounded-lg bg-brand-bg flex items-center justify-center text-brand-slate shrink-0">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-semibold text-brand-plum">{event.title}</h4>
+                      <p className="text-xs text-brand-slate mt-0.5 font-light leading-relaxed">{event.description}</p>
+                      <span className="text-[10px] text-brand-slate/60 block mt-1">
+                        {new Date(event.timestamp).toLocaleDateString(undefined, { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center flex-1 flex items-center justify-center">
+                <p className="text-xs text-brand-slate">No recent activity logged.</p>
+              </div>
+            )}
+          </div>
           
-          {timeline.length > 0 ? (
-            <div className="flex flex-col gap-4">
-              {timeline.slice(0, 3).map((event) => (
-                <div key={event.id} className="flex gap-3 items-start border-b border-brand-slate/5 pb-3 last:border-0 last:pb-0">
-                  <div className="w-8 h-8 rounded-lg bg-brand-bg flex items-center justify-center text-brand-slate shrink-0">
-                    <Clock className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-brand-plum">{event.title}</h4>
-                    <p className="text-xxs text-brand-slate mt-0.5">{event.description}</p>
-                    <span className="text-xxxxs text-brand-slate/60 block mt-1">
-                      {new Date(event.timestamp).toLocaleDateString(undefined, { 
-                        month: 'short', 
-                        day: 'numeric', 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </span>
-                  </div>
-                </div>
-              ))}
+          {timeline.length > 0 && (
+            <div className="border-t border-brand-slate/10 pt-4 mt-4">
               <Link 
                 to="/journey" 
-                className="text-xxs font-semibold text-brand-lavender hover:underline w-fit mt-2"
+                className="text-xs font-semibold text-brand-lavender hover:underline w-fit block"
               >
                 View Full Timeline
               </Link>
-            </div>
-          ) : (
-            <div className="py-8 text-center">
-              <p className="text-xs text-brand-slate">No recent activity logged.</p>
             </div>
           )}
         </div>
 
         {/* Your Records Summary */}
-        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl shadow-sm">
-          <h3 className="font-display text-md font-semibold text-brand-plum mb-4">Medical Documents</h3>
-          
-          {patient?.current_symptoms ? (
-            <div className="flex flex-col gap-4 justify-between h-[calc(100%-2rem)]">
-              <div className="bg-brand-bg p-4 rounded-xl border border-brand-slate/10">
-                <h4 className="text-xxs font-bold tracking-wider text-brand-slate uppercase mb-1.5">Logged Symptoms</h4>
+        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl shadow-sm flex flex-col justify-between h-full animate-in fade-in duration-300">
+          <div className="flex-1 flex flex-col">
+            <h3 className="font-display text-base font-semibold text-brand-plum mb-4">Medical Documents</h3>
+            
+            {patient?.current_symptoms ? (
+              <div className="bg-brand-bg p-4 rounded-xl border border-brand-slate/10 flex-1">
+                <h4 className="text-xs font-bold tracking-wider text-brand-slate uppercase mb-1.5">Logged Symptoms</h4>
                 <p className="text-xs text-brand-plum leading-relaxed italic font-light">
                   "{patient.current_symptoms}"
                 </p>
               </div>
-              <div className="flex items-center justify-between border-t border-brand-slate/10 pt-4 mt-2">
-                <span className="text-xxs text-brand-slate">
-                  Age: {patient.age} | Gender: {patient.gender}
-                </span>
+            ) : (
+              <div className="py-8 text-center flex-1 flex flex-col items-center justify-center">
+                <p className="text-xs text-brand-slate mb-4">No records or symptoms uploaded yet.</p>
                 <Link 
-                  to="/records"
-                  className="text-xxs font-semibold text-brand-lavender hover:underline"
+                  to="/profile" 
+                  className="bg-brand-lavender hover:bg-brand-lavender-hover text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all shadow-sm"
                 >
-                  Manage Records
+                  Setup Patient Context
                 </Link>
               </div>
-            </div>
-          ) : (
-            <div className="py-8 text-center flex flex-col items-center justify-center">
-              <p className="text-xs text-brand-slate mb-4">No records or symptoms uploaded yet.</p>
+            )}
+          </div>
+          
+          {patient?.current_symptoms && (
+            <div className="flex items-center justify-between border-t border-brand-slate/10 pt-4 mt-4">
+              <span className="text-xs text-brand-slate">
+                Age: {patient.age} | Gender: {patient.gender}
+              </span>
               <Link 
-                to="/profile" 
-                className="bg-brand-lavender hover:bg-brand-lavender-hover text-white text-xxs font-semibold px-4 py-2.5 rounded-lg transition-all shadow-sm"
+                to="/records"
+                className="text-xs font-semibold text-brand-lavender hover:underline font-medium"
               >
-                Setup Patient Context
+                Manage Records
               </Link>
             </div>
           )}
