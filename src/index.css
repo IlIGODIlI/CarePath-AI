@@ -2,19 +2,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-bg: #FAF6F0; /* Warm Beige background */
-  --color-brand-card: #FFFFFF; /* Warm Cream / White cards */
-  --color-brand-lavender-light: #F3EBFB; /* Soft Lavender AI surface */
-  --color-brand-lavender: #5D458F; /* Deep Lavender primary accent */
-  --color-brand-lavender-hover: #4A3572;
-  --color-brand-plum: #2A1D36; /* Dark Plum text color */
-  --color-brand-slate: #605C66; /* Secondary text */
-  --color-brand-sage-bg: #E8F2ED;
-  --color-brand-sage-text: #326B4D;
+  --color-brand-bg: #FAF8F5; /* Warm Ivory background */
+  --color-brand-card: #FFFFFF; /* Pure white card surface */
+  --color-brand-lavender-light: #F2ECFC; /* Soft Amethyst surface */
+  --color-brand-lavender: #5F3EA1; /* Deep Amethyst accent */
+  --color-brand-lavender-hover: #4A3080;
+  --color-brand-plum: #1E1625; /* Deep Obsidian Slate */
+  --color-brand-slate: #5C5761; /* Soft Charcoal secondary text */
+  --color-brand-sage-bg: #E9F3EC;
+  --color-brand-sage-text: #3A845A;
   --color-brand-rose-bg: #FDF2F2;
-  --color-brand-rose-text: #8F2A2A;
-  --color-brand-amber-bg: #FEF3C7;
-  --color-brand-amber-text: #92400E;
+  --color-brand-rose-text: #B33939;
+  --color-brand-amber-bg: #FEF6EA;
+  --color-brand-amber-text: #D48C2B;
 
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Outfit', system-ui, sans-serif;

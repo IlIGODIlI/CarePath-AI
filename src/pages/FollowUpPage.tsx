@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { usePatient } from '../context/PatientContext';
 import { followupService } from '../services/followupService';
+import { Link } from 'react-router-dom';
 import { 
   CheckCircle, 
   AlertCircle, 
   PlusCircle, 
   Activity,
-  FileCheck
+  FileCheck,
+  TrendingUp,
+  ShieldAlert,
+  ChevronRight
 } from 'lucide-react';
 import type { FollowUp } from '../types';
 
@@ -105,25 +109,79 @@ export default function FollowUpPage() {
     }
   };
 
+  // Automated Escalation Risk Detection
+  const hasPersistentSymptoms = followups.some(f => 
+    f.symptoms_logged?.toLowerCase().includes('persistent') || 
+    f.symptoms_logged?.toLowerCase().includes('no improvement') || 
+    f.symptoms_logged?.toLowerCase().includes('worse')
+  );
+
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
-
+      
+      {/* Alert Messaging */}
       {successMsg && (
-        <div className="bg-brand-sage-bg border border-brand-sage-text/10 text-brand-sage-text p-4 rounded-xl text-sm flex items-center gap-2">
+        <div className="bg-brand-sage-bg border border-brand-sage-text/10 text-brand-sage-text p-4 rounded-xl text-xs flex items-center gap-2 animate-in fade-in duration-300">
           <CheckCircle className="w-5 h-5 shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
       {error && (
-        <div className="bg-brand-rose-bg border border-brand-rose-text/10 text-brand-rose-text p-4 rounded-xl text-sm flex items-center justify-between">
+        <div className="bg-brand-rose-bg border border-brand-rose-text/10 text-brand-rose-text p-4 rounded-xl text-xs flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-5 h-5" />
             <span>{error}</span>
           </div>
-          <button onClick={fetchFollowups} className="text-xs font-bold underline">Retry</button>
+          <button onClick={fetchFollowups} className="text-xs font-bold underline cursor-pointer">Retry</button>
         </div>
       )}
+
+      {/* Escalation Prompt */}
+      {hasPersistentSymptoms && (
+        <div className="bg-brand-amber-bg border border-brand-amber-text/15 text-brand-amber-text p-4.5 rounded-2xl flex items-start gap-3.5 text-xs leading-relaxed animate-in slide-in-from-top-4 duration-300 shadow-xxs">
+          <ShieldAlert className="w-5 h-5 text-brand-amber-text shrink-0 mt-0.5 animate-pulse" />
+          <div className="flex-1">
+            <span className="font-bold">Escalation Recommendation: </span>
+            Symptom progression ledger notes limited recovery response or persistent cough/tightness patterns. We advise reviewing your Specialist Brief and completing your recommended specialist referral consultation.
+            <div className="mt-2.5">
+              <Link 
+                to="/analysis"
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-brand-lavender bg-brand-lavender-light hover:bg-brand-lavender/10 px-3 py-1.5 rounded-lg transition-all"
+              >
+                Go to Specialist Referrals
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Checkpoints Visualizer Header */}
+      <div className="bg-brand-card border border-brand-slate/10 p-5 rounded-2xl shadow-sm">
+        <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase mb-4 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-brand-lavender" />
+          Recovery Milestones
+        </h3>
+        
+        {/* Recovery Journey Ribbon checkpoints */}
+        <div className="flex items-center justify-between gap-2 max-w-xl">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-brand-sage-bg text-brand-sage-text flex items-center justify-center text-[10px] font-bold border border-brand-sage-text/15">✓</div>
+            <span className="text-xs text-brand-slate">Treatment Start</span>
+          </div>
+          <div className="h-px bg-brand-slate/20 flex-1" />
+          <div className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${followups.length > 0 ? 'bg-brand-sage-bg text-brand-sage-text border-brand-sage-text/15' : 'bg-brand-bg text-brand-slate border-brand-slate/20'}`}>{followups.length > 0 ? '✓' : '2'}</div>
+            <span className="text-xs text-brand-slate">Day 3 Check</span>
+          </div>
+          <div className="h-px bg-brand-slate/20 flex-1" />
+          <div className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${followups.length > 1 ? 'bg-brand-sage-bg text-brand-sage-text border-brand-sage-text/15' : 'bg-brand-bg text-brand-slate border-brand-slate/20'}`}>{followups.length > 1 ? '✓' : '3'}</div>
+            <span className="text-xs text-brand-slate">Day 7 Check</span>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Form panel */}
@@ -141,7 +199,7 @@ export default function FollowUpPage() {
                 placeholder="Log cough, breathing, congestion, fatigue..."
                 value={symptomsLogged}
                 onChange={(e) => setSymptomsLogged(e.target.value)}
-                className="w-full bg-brand-bg border border-brand-slate/15 rounded-xl px-3 py-2.5 text-xs focus:border-brand-lavender focus:ring-1 focus:ring-brand-lavender outline-none resize-none transition-all"
+                className="w-full bg-brand-bg border border-brand-slate/15 rounded-xl px-3 py-2.5 text-xs focus:border-brand-lavender focus:ring-1 focus:ring-brand-lavender outline-none resize-none transition-all font-light"
                 required
               />
             </div>
@@ -153,7 +211,7 @@ export default function FollowUpPage() {
                 placeholder="e.g. Appointment scheduled, rested well, inhaler doses..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-brand-bg border border-brand-slate/15 rounded-xl px-3 py-2.5 text-xs focus:border-brand-lavender focus:ring-1 focus:ring-brand-lavender outline-none resize-none transition-all"
+                className="w-full bg-brand-bg border border-brand-slate/15 rounded-xl px-3 py-2.5 text-xs focus:border-brand-lavender focus:ring-1 focus:ring-brand-lavender outline-none resize-none transition-all font-light"
               />
             </div>
 
@@ -181,7 +239,7 @@ export default function FollowUpPage() {
           ) : followups.length === 0 ? (
             <div className="text-center py-10 flex flex-col items-center gap-3">
               <FileCheck className="w-8 h-8 text-brand-slate/40" />
-              <p className="text-xs text-brand-slate">No check-ins logged yet. Keep your path updated.</p>
+              <p className="text-xs text-brand-slate font-light">No check-ins logged yet. Keep your path updated.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-5">
@@ -191,7 +249,7 @@ export default function FollowUpPage() {
                     <span className="text-xxs font-bold text-brand-sage-text bg-brand-sage-bg px-2.5 py-0.5 rounded-full">
                       Logged Check-in
                     </span>
-                    <span className="text-xxs text-brand-slate/75">
+                    <span className="text-xxs text-brand-slate/75 font-light">
                       {new Date(log.check_in_date).toLocaleDateString(undefined, { 
                         month: 'short', 
                         day: 'numeric',

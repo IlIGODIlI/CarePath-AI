@@ -4,17 +4,11 @@ import { usePatient } from '../context/PatientContext';
 import { useAuth } from '../context/AuthContext';
 import { 
   Heart, 
-  LayoutDashboard, 
-  Map, 
-  Sparkles, 
-  FolderOpen, 
-  CalendarCheck, 
-  Bell, 
-  UploadCloud, 
   LogOut, 
   Menu, 
   X 
 } from 'lucide-react';
+import { navigationConfig } from '../config/navigation';
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -43,74 +37,17 @@ export default function DashboardLayout() {
     navigate('/login');
   };
 
-  const menuItems = [
-    { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'My Journey', path: '/journey', icon: Map },
-    { name: 'AI Analysis', path: '/analysis', icon: Sparkles },
-    { name: 'Upload Center', path: '/upload', icon: UploadCloud },
-    { name: 'My Records', path: '/records', icon: FolderOpen },
-    { name: 'Follow-up', path: '/followup', icon: CalendarCheck },
-  ];
+  const menuItems = navigationConfig.filter(item => item.showInSidebar && !item.isSecondary);
+  const secondaryItems = navigationConfig.filter(item => item.showInSidebar && item.isSecondary);
 
-  const secondaryItems = [
-    { name: 'Notifications', path: '/notifications', icon: Bell },
-  ];
-
-  // Helper to map paths to titles/subtitles
+  // Helper to map paths to titles/subtitles from unified source of truth
   const getHeaderDetails = () => {
     const path = location.pathname;
-    if (path === '/dashboard') {
+    const match = navigationConfig.find(item => item.path === path);
+    if (match) {
       return {
-        title: 'Dashboard',
-        subtitle: 'Overview of your active care journey and next steps.'
-      };
-    }
-    if (path === '/journey') {
-      return {
-        title: 'My Care Journey',
-        subtitle: 'Chronological timeline of your clinical events, uploads, and check-ins.'
-      };
-    }
-    if (path === '/analysis') {
-      return {
-        title: 'AI Analysis',
-        subtitle: 'Evidence-backed specialist matching and clinical reasoning reports.'
-      };
-    }
-    if (path === '/analysis/processing') {
-      return {
-        title: 'AI Analysis Processing',
-        subtitle: 'CarePath multi-agent routing engines are processing your context.'
-      };
-    }
-    if (path === '/upload') {
-      return {
-        title: 'Upload Center',
-        subtitle: 'Submit medical imaging, lab reports, or medication prescriptions.'
-      };
-    }
-    if (path === '/records') {
-      return {
-        title: 'Medical Records',
-        subtitle: 'Your organized library of extracted clinical documents and scripts.'
-      };
-    }
-    if (path === '/followup' || path === '/follow-up') {
-      return {
-        title: 'Follow-up Tracker',
-        subtitle: 'Record daily symptom status and log recovery check-ins.'
-      };
-    }
-    if (path === '/notifications') {
-      return {
-        title: 'Notifications',
-        subtitle: 'Stay informed of agent outputs, completions, and scheduling updates.'
-      };
-    }
-    if (path === '/profile') {
-      return {
-        title: 'Patient Profile',
-        subtitle: 'Manage your personal details, allergies, and medical history summary.'
+        title: match.name,
+        subtitle: match.subtitle
       };
     }
     return {
