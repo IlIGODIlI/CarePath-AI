@@ -1,5 +1,7 @@
 # Environments
 .env
+.env*
+!.env.example
 .venv
 env/
 venv/
@@ -21,3 +23,11 @@ __pycache__/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Node dependencies and build
+node_modules/
+build/
+dist/
+coverage/
+*.log
+
