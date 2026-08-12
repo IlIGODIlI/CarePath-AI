@@ -17,6 +17,21 @@ class Settings(BaseSettings):
     CHROMA_PERSIST_DIRECTORY: str = "./data/chroma_db"
     UPLOADS_DIRECTORY: str = "./data/uploads"
 
+    # Logging
+    LOG_LEVEL: str = "INFO"
+
+    # Upload & Request Limits
+    MAX_UPLOAD_SIZE_MB: int = 20
+    REQUEST_TIMEOUT_SECONDS: int = 60
+
+    # ChromaDB
+    CHROMA_COLLECTION_NAME: str = "medical_guidelines"
+
+    # Per-module confidence thresholds (used by validation helpers)
+    NLP_CONFIDENCE_THRESHOLD: float = 0.75
+    VISION_CONFIDENCE_THRESHOLD: float = 0.70
+    OCR_MIN_CONFIDENCE: float = 0.50
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

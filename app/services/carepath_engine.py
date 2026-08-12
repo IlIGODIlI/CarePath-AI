@@ -16,11 +16,17 @@ from app.services.nlp_engine import nlp_engine
 from app.services.rag_engine import rag_engine
 
 from app.core.config import settings
-from app.core.logging import logger
+from app.core.logging import get_logger
+from app.core.interfaces import ClinicalSynthesisService, ServiceHealthStatus, ServiceAvailability
+
+logger = get_logger(__name__)
 
 
-class CarePathEngine:
+class CarePathEngine(ClinicalSynthesisService):
     """Clinical Multi-Modal Reasoning Synthesizer."""
+
+    _SERVICE_NAME = "CarePath Clinical Synthesis Engine"
+    _SERVICE_VERSION = "0.1.0"
 
     def __init__(self):
         self.gemini_key = settings.GEMINI_API_KEY
@@ -35,6 +41,55 @@ class CarePathEngine:
                 self.gemini_model = None
         else:
             self.gemini_model = None
+
+    # ------------------------------------------------------------------
+    # Interface: BaseAIService
+    # ------------------------------------------------------------------
+
+    def health_check(self) -> ServiceHealthStatus:
+        """Return aggregate health status across all four sub-engines."""
+        sub_statuses = [
+            ocr_engine.health_check(),
+            vision_engine.health_check(),
+            nlp_engine.health_check(),
+            rag_engine.health_check(),
+        ]
+        from app.core.interfaces import ServiceAvailability as SA  # local import to avoid circular
+        unavailable = [s for s in sub_statuses if s.availability == SA.UNAVAILABLE]
+        degraded = [s for s in sub_statuses if s.availability == SA.DEGRADED]
+        if unavailable:
+            return ServiceHealthStatus(
+                availability=SA.UNAVAILABLE,
+                backend="multi-modal",
+                message=f"{len(unavailable)} sub-engine(s) are unavailable.",
+            )
+        if degraded:
+            return ServiceHealthStatus(
+                availability=SA.DEGRADED,
+                backend="multi-modal",
+                message=f"{len(degraded)} sub-engine(s) running in degraded/fallback mode.",
+            )
+        return ServiceHealthStatus(
+            availability=SA.AVAILABLE,
+            backend="multi-modal",
+            message="All sub-engines are fully operational.",
+        )
+
+    def get_service_info(self) -> dict:
+        """Return metadata about this synthesis engine and its sub-engines."""
+        health = self.health_check()
+        return {
+            "name": self._SERVICE_NAME,
+            "version": self._SERVICE_VERSION,
+            "status": health.availability.value,
+            "gemini_enabled": self.gemini_model is not None,
+            "sub_engines": {
+                "ocr": ocr_engine.get_service_info(),
+                "vision": vision_engine.get_service_info(),
+                "nlp": nlp_engine.get_service_info(),
+                "rag": rag_engine.get_service_info(),
+            },
+        }
 
     def synthesize_patient_case(
         self,
