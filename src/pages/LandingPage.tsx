@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Activity, Eye, Compass, Users2, RefreshCw, Heart } from 'lucide-react';
 import heroBg from '../assets/hero-bg.png';
+import SplitText from '../components/SplitText';
 
 export default function LandingPage() {
   const steps = [
@@ -62,9 +63,36 @@ export default function LandingPage() {
             Autonomous Healthcare Navigator
           </div>
 
-          <h1 className="font-display font-bold text-5xl md:text-7xl tracking-tight text-brand-plum mb-5 max-w-3xl leading-tight">
-            Right Guidance.<br />Right Specialist.<br />
-            <span className="text-brand-lavender">Right Time.</span>
+          <h1 className="font-display font-bold text-5xl md:text-7xl tracking-tight leading-tight mb-5 max-w-3xl">
+            <SplitText
+              text="Right Guidance."
+              className="text-brand-plum inline-block"
+              delay={35}
+              duration={0.8}
+              ease="power3.out"
+              splitType="chars"
+              tag="span"
+            />
+            <br />
+            <SplitText
+              text="Right Specialist."
+              className="text-brand-plum inline-block"
+              delay={35}
+              duration={0.8}
+              ease="power3.out"
+              splitType="chars"
+              tag="span"
+            />
+            <br />
+            <SplitText
+              text="Right Time."
+              className="text-brand-lavender inline-block"
+              delay={35}
+              duration={0.8}
+              ease="power3.out"
+              splitType="chars"
+              tag="span"
+            />
           </h1>
 
           <p className="text-brand-slate text-lg md:text-xl font-light leading-relaxed max-w-2xl">

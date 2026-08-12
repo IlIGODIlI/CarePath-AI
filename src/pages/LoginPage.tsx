@@ -60,13 +60,6 @@ export default function LoginPage() {
     }
   };
 
-  // Skip Login for demo/testing purposes
-  const handleBypass = () => {
-    localStorage.setItem('carepath_token', 'demo_token');
-    localStorage.setItem('carepath_patient_id', 'demo_patient_id');
-    navigate('/dashboard');
-  };
-
   return (
     <div>
       <div className="text-center mb-6">
@@ -142,12 +135,6 @@ export default function LoginPage() {
             Create account
           </Link>
         </span>
-        <button
-          onClick={handleBypass}
-          className="text-xs text-brand-slate hover:text-brand-plum underline cursor-pointer"
-        >
-          Bypass to dashboard (Demo mode)
-        </button>
       </div>
     </div>
   );
