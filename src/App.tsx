@@ -21,6 +21,7 @@ import MedicalRecordsPage from './pages/MedicalRecordsPage';
 import FollowUpPage from './pages/FollowUpPage';
 import NotificationsPage from './pages/NotificationsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import SettingsPage from './pages/SettingsPage';
 
 // Protected Route Guard
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -81,6 +82,7 @@ export default function App() {
           <Route path="/followup" element={<FollowUpPage />} />
           <Route path="/follow-up" element={<FollowUpPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         {/* 404 Route */}

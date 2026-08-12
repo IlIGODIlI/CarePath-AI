@@ -6,7 +6,8 @@ import {
   FolderOpen, 
   CalendarCheck, 
   Bell, 
-  User 
+  User,
+  Settings
 } from 'lucide-react';
 
 export interface NavItem {
@@ -87,5 +88,13 @@ export const navigationConfig: NavItem[] = [
     subtitle: 'Manage your personal details, allergies, and medical history summary.',
     icon: User,
     showInSidebar: false
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    subtitle: 'Manage your CarePath preferences and experience.',
+    icon: Settings,
+    showInSidebar: true,
+    isSecondary: true
   }
 ];

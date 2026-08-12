@@ -57,3 +57,27 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #C4C0B9;
 }
+
+/* Accessibility Preferences Styling */
+html.text-size-large {
+  font-size: 110%;
+}
+html.text-size-extra-large {
+  font-size: 120%;
+}
+html.reduced-motion *,
+html.reduced-motion *::before,
+html.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+html.high-contrast {
+  --color-brand-slate: #2B2630;
+  --color-brand-plum: #000000;
+}
+html.high-contrast .border, 
+html.high-contrast border-brand-slate\/10 {
+  border-color: rgba(30, 22, 37, 0.45) !important;
+}
