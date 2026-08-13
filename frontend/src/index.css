@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-bg: #FAF8F5; /* Warm Ivory background */
+  --color-brand-card: #FFFFFF; /* Pure white card surface */
+  --color-brand-lavender-light: #F2ECFC; /* Soft Amethyst surface */
+  --color-brand-lavender: #5F3EA1; /* Deep Amethyst accent */
+  --color-brand-lavender-hover: #4A3080;
+  --color-brand-plum: #1E1625; /* Deep Obsidian Slate */
+  --color-brand-slate: #5C5761; /* Soft Charcoal secondary text */
+  --color-brand-sage-bg: #E9F3EC;
+  --color-brand-sage-text: #3A845A;
+  --color-brand-rose-bg: #FDF2F2;
+  --color-brand-rose-text: #B33939;
+  --color-brand-amber-bg: #FEF6EA;
+  --color-brand-amber-text: #D48C2B;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-brand-bg);
+    color: var(--color-brand-plum);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--color-brand-plum);
+    font-weight: 600;
+  }
+
+  /* Accessible outline style for keyboards */
+  *:focus-visible {
+    outline: 2px solid var(--color-brand-lavender);
+    outline-offset: 2px;
+  }
+}
+
+/* Elegant scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E0DCD5;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C4C0B9;
+}
+
+/* Accessibility Preferences Styling */
+html.text-size-large {
+  font-size: 110%;
+}
+html.text-size-extra-large {
+  font-size: 120%;
+}
+html.reduced-motion *,
+html.reduced-motion *::before,
+html.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+html.high-contrast {
+  --color-brand-slate: #2B2630;
+  --color-brand-plum: #000000;
+}
+html.high-contrast .border, 
+html.high-contrast border-brand-slate\/10 {
+  border-color: rgba(30, 22, 37, 0.45) !important;
+}
