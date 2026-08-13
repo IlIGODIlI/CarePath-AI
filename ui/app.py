@@ -62,8 +62,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+import os
+
 # API Base URL
-API_URL = "http://127.0.0.1:8000/api/v1"
+API_URL = os.getenv("API_URL", os.getenv("VITE_API_URL", "http://127.0.0.1:8000") + "/api/v1")
 
 # Sidebar Navigation & System Status
 with st.sidebar:

@@ -29,7 +29,8 @@ def test_database_layer():
             password_hash="fake_hash_for_testing",
             role="patient",
             account_status="active",
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
         )
         print(f"[OK] User inserted successfully with ID: {user.user_id}")
         

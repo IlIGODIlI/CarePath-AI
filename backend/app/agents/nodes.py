@@ -475,6 +475,37 @@ def followup_node(state: CarePathGlobalState) -> Dict[str, Any]:
         confidence=0.98
     )
 
+    from database.connections import SessionLocal
+    from database.crud.ai_crud import create_analysis
+
+    # Save checkpoint to Postgres
+    session = SessionLocal()
+    try:
+        if state.get("patient_id"):
+            from database.models import AIAnalysis
+            import uuid
+            analysis_id = uuid.uuid4()
+            db_analysis = AIAnalysis(
+                analysis_id=analysis_id,
+                user_id=uuid.UUID(state.get("patient_id")),
+                analysis_type="langgraph_orchestration",
+                summary="Workflow completed successfully with followup.",
+                execution_time=int(exec_ms),
+                risk_level="HIGH" if state.get("is_emergency") else "LOW"
+            )
+            session.add(db_analysis)
+            session.commit()
+            checkpoint_id = str(analysis_id)
+        else:
+            checkpoint_id = "ckpt_dummy"
+    except Exception as e:
+        session.rollback()
+        checkpoint_id = f"error_{e}"
+    finally:
+        session.close()
+
+    followup["postgres_checkpoint_id"] = checkpoint_id
+
     return {
         "followup_scheduled": followup,
         "current_agent_id": "FOLLOW_UP",
