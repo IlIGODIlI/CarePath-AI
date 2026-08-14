@@ -1,21 +1,30 @@
-from typing import Any, List
+from typing import Any, List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import select
-from database.crud import clinical_crud
+from database.crud import system_crud
 from database.models import TimelineEvent
 import uuid
 from datetime import datetime, timezone
 
-def get_timeline_events(session: Session, patient_id: str) -> List[TimelineEvent]:
-    return session.scalars(select(TimelineEvent).where(TimelineEvent.user_id == uuid.UUID(patient_id))).all()
+def get_timeline_events(session: Session, patient_id: str, event_type: Optional[str] = None, limit: int = 50) -> List[TimelineEvent]:
+    uid = uuid.UUID(patient_id) if isinstance(patient_id, str) else patient_id
+    return system_crud.get_user_timeline_events(session=session, user_id=uid, event_type=event_type, limit=limit)
 
 def add_timeline_event(session: Session, data: dict) -> TimelineEvent:
     now = datetime.now(timezone.utc)
-    return clinical_crud.create_timeline_event(
+    user_id = data.get("user_id")
+    event_date = data.get("event_date")
+    
+    return system_crud.create_timeline_event(
         session=session,
         event_id=uuid.uuid4(),
-        user_id=uuid.UUID(data.get("user_id")),
+        user_id=uuid.UUID(user_id) if isinstance(user_id, str) else user_id,
         event_type=data.get("event_type", "GENERAL"),
+        event_date=event_date or now,
         event_title=data.get("event_title", ""),
+        event_description=data.get("event_description", ""),
+        severity=data.get("severity", "MEDIUM"),
+        related_record_id=uuid.UUID(data.get("related_record_id")) if data.get("related_record_id") else None,
+        related_record_type=data.get("related_record_type"),
+        visible_to_patient=data.get("visible_to_patient", True),
         created_at=now
     )
