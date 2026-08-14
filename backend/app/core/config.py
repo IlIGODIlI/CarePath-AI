@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     # Core Settings
     APP_ENV: str = "development"
+    ENVIRONMENT: str = "development"
     DEBUG: bool = True
     PROJECT_NAME: str = "CarePath AI Backend"
     API_V1_STR: str = "/api/v1"
@@ -39,13 +40,26 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
     DATABASE_URL: str = (
-        "postgresql+asyncpg://carepath_admin:carepath_secret_pass@localhost:5432/carepath_db"
+        "postgresql://carepath_admin:carepath_secret_pass@localhost:5432/carepath_db"
     )
+
+    # Supabase Settings
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
 
     # File Storage Settings
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 10
     ALLOWED_UPLOAD_EXTENSIONS: List[str] = [".pdf", ".jpg", ".jpeg", ".png", ".txt"]
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def assemble_db_url(cls, v: str) -> str:
+        if v and v.startswith("postgresql://") and "+asyncpg" not in v:
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if v and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql+asyncpg://", 1)
+        return v
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
@@ -56,5 +70,10 @@ class Settings(BaseSettings):
             return v
         raise ValueError(f"Invalid CORS origins value: {v}")
 
+    @property
+    def BACKEND_CORS_ORIGINS(self) -> List[str]:
+        return self.CORS_ORIGINS
+
 
 settings = Settings()
+

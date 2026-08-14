@@ -41,5 +41,23 @@ def register(credentials: AuthRegister, db: Session = Depends(get_db)):
 
 @router.get("/profile")
 def get_profile(db: Session = Depends(get_db)):
-    # Mocking profile retrieval; typically depends on JWT extraction
-    return {"message": "Profile would be returned here"}
+    # Retrieve first active user as demo profile if token authentication is generic
+    from database.models import User
+    user = db.query(User).first()
+    if user:
+        first_name = user.profile.first_name if user.profile else "User"
+        last_name = user.profile.last_name if user.profile else ""
+        full_name = f"{first_name} {last_name}".strip() or user.email
+        return {
+            "id": str(user.user_id),
+            "email": user.email,
+            "name": full_name,
+            "role": user.role,
+        }
+    return {
+        "id": "demo_user",
+        "email": "demo@carepath.ai",
+        "name": "Demo Patient",
+        "role": "patient",
+    }
+

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePatient } from '../context/PatientContext';
 import { timelineService } from '../services/timelineService';
 import { 

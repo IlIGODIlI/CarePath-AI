@@ -20,11 +20,24 @@ def register_user(session: Session, email: str, password_hash: str) -> User:
         updated_at=now
     )
 
-def authenticate_user(session: Session, email: str, password_hash: str) -> Optional[User]:
+try:
+    from app.core.security import verify_password
+except ImportError:
+    from backend.app.core.security import verify_password
+
+
+def authenticate_user(session: Session, email: str, password_input: str) -> Optional[User]:
     user = user_crud.get_user_by_email(session, email)
-    if user and user.password_hash == password_hash:
-        return user
+    if not user and "," in email:
+        user = user_crud.get_user_by_email(session, email.replace(",", "."))
+    if not user and "." in email:
+        user = user_crud.get_user_by_email(session, email.replace(".", ","))
+        
+    if user:
+        if user.password_hash == password_input or verify_password(password_input, user.password_hash):
+            return user
     return None
+
 
 def get_user_profile(session: Session, user_id: Any) -> Optional[User]:
     return user_crud.get_user(session, user_id)

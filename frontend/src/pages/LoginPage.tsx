@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, AlertTriangle, ArrowRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { authService } from '../services/authService';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,39 +24,27 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.message || 'Invalid email or password.');
-      }
-
-      const data = await response.json();
+      const data: any = await authService.login({ email, password });
       
-      // Save credentials & patient info
-      localStorage.setItem('carepath_token', data.token || data.access_token || 'mock_token');
-      if (data.patient?.id) {
-        localStorage.setItem('carepath_patient_id', data.patient.id);
-      } else if (data.patient_id) {
-        localStorage.setItem('carepath_patient_id', data.patient_id);
-      } else {
-        localStorage.setItem('carepath_patient_id', 'default_patient_id');
-      }
+      const token = data.token || data.access_token || 'mock_jwt_token';
+      const userProfile = data.user || {
+        id: data.user_id || 'demo_user',
+        email: email,
+        name: email.split('@')[0],
+        role: 'patient',
+      };
+      const pId = data.patient_id || data.patient?.id || userProfile.id;
+
+      // Update AuthContext state
+      authLogin(token, userProfile, pId);
 
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);
-      // Helpful message for hackathon offline testing
       setError(
         err.message === 'Failed to fetch'
-          ? 'Cannot connect to backend server. Ensure the API service is running on local host.'
-          : err.message || 'Login failed. Please try again.'
+          ? 'Cannot connect to backend server. Ensure the API service is running on http://localhost:8000.'
+          : err.message || 'Login failed. Please verify your email and password.'
       );
     } finally {
       setIsLoading(false);

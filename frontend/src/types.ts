@@ -72,8 +72,12 @@ export interface BlueprintTopic {
   number: number;
   title: string;
   category: 'core' | 'agents' | 'data' | 'security' | 'devops';
-  summary: string;
-  content: string;
+  summary?: string;
+  content?: string;
   diagramAscii?: string;
   keyDecisions: string[];
 }
+
+export * from './types/index';
+
+

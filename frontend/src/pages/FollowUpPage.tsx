@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePatient } from '../context/PatientContext';
 import { followupService } from '../services/followupService';
 import { Link } from 'react-router-dom';

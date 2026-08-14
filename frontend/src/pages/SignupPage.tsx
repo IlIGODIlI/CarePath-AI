@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, User, AlertTriangle, ArrowRight } from 'lucide-react';
+import { authService } from '../services/authService';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -28,22 +29,11 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/v1/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: fullName,
-          email,
-          password,
-        }),
+      await authService.register({
+        name: fullName,
+        email,
+        password,
       });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.message || 'Registration failed. Try a different email.');
-      }
 
       // Registration successful, navigate to login
       navigate('/login');
@@ -51,7 +41,7 @@ export default function SignupPage() {
       console.error('Registration error:', err);
       setError(
         err.message === 'Failed to fetch'
-          ? 'Cannot connect to backend server. Ensure the API service is running.'
+          ? 'Cannot connect to backend server. Ensure the API service is running on http://localhost:8000.'
           : err.message || 'Registration failed. Please try again.'
       );
     } finally {
