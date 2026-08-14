@@ -57,3 +57,14 @@ def update_followup_status(session: Session, followup_id: Any, status: str, comp
         kwargs["completed_date"] = completed_date or datetime.utcnow()
     return update_record(session, FollowUp, followup_id, **kwargs)
 
+def get_user_analyses(session: Session, user_id: Any) -> List[AIAnalysis]:
+    """Retrieves AI analyses for a user."""
+    stmt = select(AIAnalysis).where(AIAnalysis.user_id == user_id).order_by(AIAnalysis.created_at.desc())
+    return list(session.scalars(stmt).all())
+
+def get_user_recommendations(session: Session, user_id: Any) -> List[Recommendation]:
+    """Retrieves recommendations for a user."""
+    stmt = select(Recommendation).where(Recommendation.user_id == user_id).order_by(Recommendation.created_at.desc())
+    return list(session.scalars(stmt).all())
+
+

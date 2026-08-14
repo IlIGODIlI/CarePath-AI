@@ -12,6 +12,12 @@ def create_feedback(session: Session, **kwargs) -> Feedback:
     """Records user feedback."""
     return create_record(session, Feedback, **kwargs)
 
+def get_user_feedback(session: Session, user_id: Any) -> List[Feedback]:
+    """Retrieves feedback entries associated with a user."""
+    stmt = select(Feedback).where(Feedback.user_id == user_id).order_by(Feedback.created_at.desc())
+    return list(session.scalars(stmt).all())
+
+
 def create_agent_run(session: Session, **kwargs) -> AgentRun:
     """Logs the execution details of an AI agent."""
     return create_record(session, AgentRun, **kwargs)

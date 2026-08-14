@@ -24,6 +24,8 @@ from app.api.v1.endpoints.notifications import router as notifications_router
 from app.api.v1.endpoints.upload import router as upload_router
 from app.api.v1.endpoints.medications import router as medications_router
 from app.api.v1.endpoints.careplans import router as careplans_router
+from app.api.v1.endpoints.memory import router as memory_router
+from app.api.v1.endpoints.doctor import router as doctor_router
 
 setup_logging()
 
@@ -54,6 +56,8 @@ app.include_router(notifications_router, prefix=settings.API_V1_STR)
 app.include_router(upload_router, prefix=settings.API_V1_STR)
 app.include_router(medications_router, prefix=settings.API_V1_STR)
 app.include_router(careplans_router, prefix=settings.API_V1_STR)
+app.include_router(memory_router, prefix=settings.API_V1_STR)
+app.include_router(doctor_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
