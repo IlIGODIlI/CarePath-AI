@@ -1,114 +1,91 @@
-# React + TypeScript + Vite
+# CarePath AI - Backend & Multi-Agent Engine Architecture
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+CarePath AI is an **Autonomous Healthcare Navigation Platform**. It does not diagnose diseases; instead, it helps patients navigate the healthcare system by understanding symptoms, medical images, lab reports, and prescriptions, recommending appropriate specialists with explainable evidence, and providing continuous follow-up.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Technical Stack
+- **API Framework**: FastAPI (Async Python 3.11+)
+- **Multi-Agent Orchestrator**: LangGraph
+- **Relational DB**: PostgreSQL (SQLAlchemy AsyncEngine + Alembic)
+- **Vector DB**: ChromaDB
+- **Structured Logging**: `structlog` (JSON format)
+- **Containerization**: Docker & Docker Compose
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project Directory Topology
 
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+c:\Users\Dell\Downloads\New folder\
+├── pyproject.toml               # Dependency & Package configuration
+├── .env.example                 # Environment variables template
+├── docker-compose.yml           # Multi-container orchestration (FastAPI, Postgres, ChromaDB, Redis)
+├── docker/
+│   └── Dockerfile.dev           # Development Container Setup
+├── src/
+│   ├── main.py                  # FastAPI Application Lifespan & Entrypoint
+│   ├── config.py                # Pydantic BaseSettings management
+│   ├── api/                     # API Routers & Controllers
+│   │   └── v1/
+│   │       ├── endpoints/
+│   │       │   ├── encounters.py# Triage Session & SSE Streaming Progress Endpoints
+│   │       │   └── health.py    # Diagnostics & Liveness probe
+│   │       └── router.py
+│   ├── core/                    # Domain Core, Exceptions, Logging
+│   ├── schemas/                 # Pydantic DTOs & Validation Schemas
+│   ├── services/
+│   │   └── ai_contracts/        # Abstract Interfaces & Mock Stubs for AI Teammate
+│   └── agents/                  # LangGraph Multi-Agent Engine
+│       ├── state.py             # CarePathState Schema (TypedDict)
+│       ├── router.py            # Supervisor Agent Dynamic Router
+│       ├── graph.py             # Compiled LangGraph StateGraph
+│       └── nodes/               # Individual Agent Nodes (Supervisor, Safety, Intake...)
+└── tests/                       # Pytest Suite
 ```
-# CarePath-AI
 
-**Autonomous Multi-Agent Healthcare Navigation System & Architecture Command Center**
+---
 
-## Overview
-CarePath-AI is an autonomous multi-agent healthcare navigation system. This repository contains the architecture command center, LangGraph agent simulator, API contract explorer, database schema viewer, and backend integration.
+## Quickstart Setup
 
-## Getting Started
+### Option 1: Running with Docker Compose (Recommended)
+```bash
+docker-compose up --build
+```
+Access points:
+- **FastAPI OpenAPI Interactive Docs**: http://localhost:8000/docs
+- **Health Probe**: http://localhost:8000/api/v1/health
 
-### 1. Frontend & Command Center
-**Prerequisites:** Node.js
+### Option 2: Local Python Environment
+```bash
+python -m venv .venv
+# On Windows PowerShell:
+.venv\Scripts\Activate.ps1
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Configure environment variables in `.env` or `.env.example`:
-   Set `GEMINI_API_KEY` and backend URLs as needed.
-3. Start local development server:
-   ```bash
-   npm run dev
-   ```
+pip install -e .[dev]
+uvicorn src.main:app --reload
+```
 
-### 2. Backend & Agent Engine
-**Prerequisites:** Python 3.10+
+---
 
-1. Navigate to backend directory:
-   ```bash
-   cd backend
-   ```
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Start the FastAPI server:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
+## Testing the Multi-Agent Triage Engine
 
+### 1. Initialize a Navigation Encounter Session
+```bash
+curl -X POST "http://localhost:8000/api/v1/encounters" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chief_complaint": "Severe crushing chest pain radiating to left arm for 15 minutes",
+    "symptoms_severity": 10
+  }'
+```
+
+### 2. Trigger Asynchronous LangGraph Processing
+```bash
+curl -X POST "http://localhost:8000/api/v1/encounters/enc_<ID>/process"
+```
+
+### 3. Stream Real-time Agent Progress (SSE)
+```bash
+curl -N "http://localhost:8000/api/v1/encounters/enc_<ID>/stream"
+```

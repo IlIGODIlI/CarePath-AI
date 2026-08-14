@@ -168,7 +168,3 @@ class CarePathState(TypedDict):
     execution_history: List[AgentExecutionLog]
     next_agent: str
     error_state: Optional[str]
-
-
-CarePathGlobalState = CarePathState
-

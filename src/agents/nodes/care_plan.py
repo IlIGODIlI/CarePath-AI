@@ -5,56 +5,63 @@ from src.core.logging import logger
 
 
 async def care_plan_node(state: CarePathState) -> Dict[str, Any]:
-    """LangGraph Node — Patient Care Plan Generator."""
+    """
+    LangGraph Node — Personalized Patient Care Plan Generator.
+    Strictly distinguishes AI-generated guidance from clinician-provided instructions.
+    """
     encounter_id = state.get("encounter_id", "unknown")
     logger.info("executing_care_plan_node", encounter_id=encounter_id)
 
     specialty = state.get("recommended_specialty") or "Specialist"
     urgency = state.get("urgency_level") or UrgencyLevel.ROUTINE
     is_emergency = state.get("is_emergency", False)
+    doctor_feedback = state.get("doctor_feedback", {})
+
+    ai_guidance = [
+        f"Schedule a consultation with a {specialty} provider.",
+        "Gather all past medical records, lab reports, and medication lists.",
+        "Track symptom severity changes in your daily log."
+    ]
 
     if is_emergency or urgency == UrgencyLevel.EMERGENCY:
-        action_items = [
-            "CALL EMERGENCY SERVICES (911/112) IMMEDIATELY.",
-            "Do not drive yourself to the hospital.",
-            "Remain calm and keep patient still until emergency responders arrive.",
-        ]
-    else:
-        action_items = [
-            f"Schedule an appointment with a {specialty} provider within the recommended timeframe.",
-            "Gather all past medical records, lab reports, and current medication lists.",
-            "Track any changes in symptom severity using a daily log.",
+        ai_guidance.insert(0, "CALL EMERGENCY SERVICES (911/112) IMMEDIATELY.")
+
+    clinician_instructions = []
+    if doctor_feedback:
+        clinician_instructions = [
+            f"Clinician Note: {doctor_feedback.get('notes', 'Reviewed by physician.')}",
+            f"Confirmed Next Step: {doctor_feedback.get('confirmed_next_step', 'Follow up as advised.')}"
         ]
 
-    care_plan = {
-        "action_items": action_items,
-        "questions_for_doctor": [
-            f"Based on my symptoms, do you suspect a specific condition related to {specialty}?",
-            "What diagnostic tests do you recommend for my case?",
-            "What warning signs should prompt me to seek emergency care?",
+    care_plan_details = {
+        "care_plan_id": f"plan_{encounter_id}",
+        "encounter_id": encounter_id,
+        "ai_organization_guidance": ai_guidance,
+        "clinician_provided_instructions": clinician_instructions,
+        "questions_to_ask_doctor": [
+            f"What specific tests do you recommend for my case?",
+            "What warning signs should prompt emergency care?"
         ],
-        "red_flag_warning_signs": [
-            "Sudden severe spike in fever (>102°F / 38.9°C).",
-            "Inability to keep fluids down due to persistent vomiting.",
-            "Sudden onset of unbearable pain, dizziness, or fainting.",
+        "monitoring_points": [
+            "Track daily body temperature and pain score.",
+            "Log any new or worsening symptoms."
         ],
-        "home_care_guidance": (
-            "Maintain rest and stay hydrated. Avoid unprescribed pain relievers that may mask pain signals."
-        ),
+        "generated_at": datetime.utcnow().isoformat()
     }
 
-    execution_history = state.get("execution_history", [])
-    execution_history.append({
-        "step_id": f"step_care_plan_{len(execution_history)}",
+    history = state.get("execution_history", [])
+    history.append({
+        "step_id": f"step_care_plan_{len(history)}",
         "agent_name": "CarePlanAgent",
         "started_at": datetime.utcnow().isoformat(),
         "completed_at": datetime.utcnow().isoformat(),
         "status": "SUCCESS",
-        "state_delta_keys": ["patient_care_plan"],
+        "state_delta_keys": ["patient_care_plan", "care_plan_details"],
         "error_message": None,
     })
 
     return {
-        "patient_care_plan": care_plan["action_items"],
-        "execution_history": execution_history,
+        "patient_care_plan": ai_guidance + clinician_instructions,
+        "care_plan_details": care_plan_details,
+        "execution_history": history,
     }

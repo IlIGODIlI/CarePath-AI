@@ -1,54 +1,83 @@
+import uuid
 from typing import Any, Dict, Optional
-from fastapi import HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from src.core.logging import logger
 
 
 class DomainException(Exception):
     """Base exception for all domain business errors."""
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, code: str = "DOMAIN_ERROR", status_code: int = 400):
         self.message = message
-        self.details = details or {}
+        self.code = code
+        self.status_code = status_code
         super().__init__(self.message)
 
 
-class EncounterNotFoundException(DomainException):
-    """Raised when an encounter ID is invalid or not found."""
-    pass
+class ResourceNotFoundException(DomainException):
+    def __init__(self, message: str = "Requested resource not found"):
+        super().__init__(message=message, code="RESOURCE_NOT_FOUND", status_code=status.HTTP_404_NOT_FOUND)
 
 
 class AIServiceUnavailableException(DomainException):
-    """Raised when an external AI service contract fails or times out."""
-    pass
+    def __init__(self, message: str = "External AI service is unavailable or timed out"):
+        super().__init__(message=message, code="AI_SERVICE_UNAVAILABLE", status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
-class AgentExecutionException(DomainException):
-    """Raised when a specific LangGraph agent node fails to process state."""
-    pass
+class InvalidRequestException(DomainException):
+    def __init__(self, message: str = "Invalid request payload or parameters"):
+        super().__init__(message=message, code="INVALID_REQUEST", status_code=status.HTTP_400_BAD_REQUEST)
 
 
-class SafetyRedFlagException(DomainException):
-    """Raised when emergency symptoms short-circuit normal execution."""
-    pass
+class UnauthorizedException(DomainException):
+    def __init__(self, message: str = "Authentication required"):
+        super().__init__(message=message, code="UNAUTHORIZED", status_code=status.HTTP_401_UNAUTHORIZED)
 
 
-def setup_exception_handlers(app):
-    """Registers global exception handlers for mapping domain exceptions to FastAPI HTTP responses."""
-    @app.exception_handler(EncounterNotFoundException)
-    async def encounter_not_found_handler(request, exc: EncounterNotFoundException):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "ENCOUNTER_NOT_FOUND", "message": exc.message, "details": exc.details}
-        )
+def create_error_response(code: str, message: str, status_code: int, request_id: Optional[str] = None) -> JSONResponse:
+    req_id = request_id or f"req_{uuid.uuid4().hex[:10]}"
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "error": {
+                "code": code,
+                "message": message,
+                "request_id": req_id,
+            }
+        }
+    )
 
-    @app.exception_handler(AIServiceUnavailableException)
-    async def ai_service_unavailable_handler(request, exc: AIServiceUnavailableException):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"error": "AI_SERVICE_UNAVAILABLE", "message": exc.message, "details": exc.details}
-        )
 
-    @app.exception_handler(AgentExecutionException)
-    async def agent_execution_handler(request, exc: AgentExecutionException):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "AGENT_EXECUTION_FAILURE", "message": exc.message, "details": exc.details}
-        )
+def setup_exception_handlers(app: FastAPI):
+    """Registers global exception handlers enforcing clean, secret-free JSON error structures."""
+
+    @app.exception_handler(DomainException)
+    async def domain_exception_handler(request: Request, exc: DomainException):
+        logger.warning("domain_exception", code=exc.code, message=exc.message)
+        return create_error_response(exc.code, exc.message, exc.status_code)
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(request: Request, exc: HTTPException):
+        code_map = {
+            400: "INVALID_REQUEST",
+            401: "UNAUTHORIZED",
+            403: "FORBIDDEN",
+            404: "RESOURCE_NOT_FOUND",
+            422: "VALIDATION_ERROR",
+            429: "RATE_LIMIT_EXCEEDED",
+            500: "INTERNAL_SERVER_ERROR",
+            503: "SERVICE_UNAVAILABLE",
+        }
+        code = code_map.get(exc.status_code, "ERROR")
+        msg = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+        return create_error_response(code, msg, exc.status_code)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request: Request, exc: RequestValidationError):
+        return create_error_response("VALIDATION_FAILURE", "Invalid request body or parameters", status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        logger.error("unhandled_internal_error", error=str(exc))
+        return create_error_response("INTERNAL_SERVER_ERROR", "An unexpected error occurred", status.HTTP_500_INTERNAL_SERVER_ERROR)

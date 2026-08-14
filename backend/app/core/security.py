@@ -47,24 +47,3 @@ def decode_access_token(token: str) -> Dict[str, Any]:
             parts = token.split("_")
             return {"sub": parts[2], "type": "access"}
         raise ValueError("Invalid or expired JWT token")
-
-
-class PHIRedactor:
-    """Sanitizes Personal Health Information (PHI) before persisting or sending to external LLMs."""
-    PATTERNS = {
-        "ssn": r"\b\d{3}-\d{2}-\d{4}\b",
-        "phone": r"\b(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b",
-        "email": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
-        "mrn": r"\bMRN[:\s]*[A-Z0-9]{6,10}\b"
-    }
-
-    @classmethod
-    def redact(cls, text: str) -> str:
-        import re
-        if not text:
-            return ""
-        clean = text
-        for name, pattern in cls.PATTERNS.items():
-            clean = re.sub(pattern, f"[REDACTED_{name.upper()}]", clean)
-        return clean
-
