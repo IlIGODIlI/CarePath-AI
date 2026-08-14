@@ -78,10 +78,15 @@ export interface AnalysisResult {
 // Journey / Timeline events
 export type TimelineEventType =
   | 'symptom'
-  | 'upload'
-  | 'analysis'
+  | 'document'
+  | 'test'
+  | 'medication'
+  | 'doctor'
   | 'referral'
+  | 'analysis'
   | 'followup'
+  | 'careplan'
+  | 'upload'
   | 'consultation';
 
 export interface TimelineEvent {

@@ -1,34 +1,157 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { uploadService } from '../services/uploadService';
-import { analysisService } from '../services/analysisService';
 import { usePatient } from '../context/PatientContext';
 import { 
-  FileText, 
-  Image as ImageIcon, 
-  Clipboard, 
-  CheckCircle, 
+  UploadCloud, 
+  CheckCircle2, 
   AlertCircle, 
   Loader2, 
-  ArrowRight,
-  RefreshCw 
+  Trash2, 
+  FileText, 
+  ChevronRight, 
+  RefreshCw, 
+  Info, 
+  Calendar, 
+  Pill, 
+  AlertTriangle,
+  FolderOpen,
+  Eye,
+  Activity,
+  ArrowRight
 } from 'lucide-react';
+import { analysisService } from '../services/analysisService';
 
-interface UploaderProps {
-  title: string;
-  description: string;
-  type: 'image' | 'report' | 'prescription';
-  accept: string;
-  icon: React.ComponentType<any>;
-  onUploadSuccess: (recordId: string) => void;
+interface DocAnalysis {
+  summary: {
+    docType: string;
+    date: string;
+    source: string;
+    keyInfo: string;
+  };
+  extracted: {
+    medicines: string[];
+    symptoms: string[];
+    tests: string[];
+    measurements: string[];
+    conditions: string[];
+    instructions: string[];
+  };
+  aiInsight: string;
 }
 
-function FileWidget({ title, description, type, accept, icon: Icon, onUploadSuccess }: UploaderProps) {
+interface UploadedDoc {
+  id: string;
+  name: string;
+  size: string;
+  category: 'Prescription' | 'Lab Report' | 'Medical Report' | 'Imaging/Scan' | 'Other medical document';
+  status: 'uploading' | 'processing' | 'analyzing' | 'complete' | 'partial' | 'failed' | 'no_findings' | 'unsupported';
+  progress: number;
+  uploadedAt: string;
+  result?: DocAnalysis;
+  error?: string;
+}
+
+const INITIAL_DOCS: UploadedDoc[] = [
+  {
+    id: 'doc_1',
+    name: 'chest_xray_post.png',
+    size: '1.8 MB',
+    category: 'Imaging/Scan',
+    status: 'complete',
+    progress: 100,
+    uploadedAt: new Date(Date.now() - 86400000 * 3).toLocaleDateString(),
+    result: {
+      summary: {
+        docType: 'Imaging / Chest X-Ray (PA View)',
+        date: '11 Aug 2026',
+        source: 'City Imaging & Diagnostic Center',
+        keyInfo: 'Posterior-Anterior chest view showing slight lung hyperinflation and mild consolidation in the lower right lobe.'
+      },
+      extracted: {
+        medicines: [],
+        symptoms: ['Mild shortness of breath', 'Dry cough'],
+        tests: ['Chest X-Ray PA View'],
+        measurements: ['Lung hyperinflation observed', 'Right lower lobe density'],
+        conditions: ['Consolidation', 'Mild hyperinflation'],
+        instructions: ['Follow up with clinical consultation if symptoms worsen.']
+      },
+      aiInsight: 'CarePath noticed mild lung consolidation markings in the right lower lobe. Potentially relevant information includes history of persistent dry cough. Consider discussing this with your doctor to evaluate pulmonology routing.'
+    }
+  },
+  {
+    id: 'doc_2',
+    name: 'cbc_blood_report.pdf',
+    size: '420 KB',
+    category: 'Lab Report',
+    status: 'complete',
+    progress: 100,
+    uploadedAt: new Date(Date.now() - 86400000 * 2).toLocaleDateString(),
+    result: {
+      summary: {
+        docType: 'Complete Blood Count (CBC)',
+        date: '12 Aug 2026',
+        source: 'Apex Laboratories',
+        keyInfo: 'Complete blood profile with standard cell counts.'
+      },
+      extracted: {
+        medicines: [],
+        symptoms: [],
+        tests: ['Complete Blood Count (CBC)'],
+        measurements: ['WBC: 7.5 K/uL (Normal)', 'Hb: 14.2 g/dL (Normal)', 'Platelets: 220 K/uL (Normal)'],
+        conditions: [],
+        instructions: ['No follow-up blood tests indicated at this time.']
+      },
+      aiInsight: 'CarePath noticed that all primary blood cell counts and hemoglobin values sit well within standard reference thresholds. No indications of acute inflammatory response found.'
+    }
+  },
+  {
+    id: 'doc_3',
+    name: 'rx_albuterol_90mcg.pdf',
+    size: '120 KB',
+    category: 'Prescription',
+    status: 'complete',
+    progress: 100,
+    uploadedAt: new Date(Date.now() - 86400000).toLocaleDateString(),
+    result: {
+      summary: {
+        docType: 'Prescription Script',
+        date: '13 Aug 2026',
+        source: 'Dr. Robert Chen, MD (General Practice)',
+        keyInfo: 'Albuterol Sulfate HFA inhaler prescription.'
+      },
+      extracted: {
+        medicines: ['Albuterol Sulfate HFA (90mcg)'],
+        symptoms: ['Wheezing', 'Dry cough'],
+        tests: [],
+        measurements: ['Dose: 2 puffs every 4-6 hours as needed'],
+        conditions: ['Bronchospasm', 'Asthma (Mild)'],
+        instructions: ['Inhale 2 puffs as needed for cough or shortness of breath. Rinse mouth after use.']
+      },
+      aiInsight: 'CarePath noticed an active prescription script for an Albuterol bronchodilator. Potentially relevant information includes directions for acute symptoms relief. Consider discussing this with your specialist if inhaler use exceeds 2 times per week.'
+    }
+  }
+];
+
+export default function UploadCenterPage() {
+  const { patient } = usePatient();
+  const navigate = useNavigate();
+
+  // Load from local storage or fallback to seed
+  const [documents, setDocuments] = useState<UploadedDoc[]>(() => {
+    const stored = localStorage.getItem('carepath_uploaded_docs');
+    return stored ? JSON.parse(stored) : INITIAL_DOCS;
+  });
+
+  const [selectedDocId, setSelectedDocId] = useState<string | null>('doc_1');
+  const [category, setCategory] = useState<'Prescription' | 'Lab Report' | 'Medical Report' | 'Imaging/Scan' | 'Other medical document'>('Medical Report');
   const [dragActive, setDragActive] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [isStartingAnalysis, setIsStartingAnalysis] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  // Sync to local storage
+  useEffect(() => {
+    localStorage.setItem('carepath_uploaded_docs', JSON.stringify(documents));
+  }, [documents]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -40,29 +163,132 @@ function FileWidget({ title, description, type, accept, icon: Icon, onUploadSucc
     }
   };
 
-  const uploadFile = async (selectedFile: File) => {
-    setFile(selectedFile);
-    setStatus('uploading');
-    setProgress(20);
+  const simulateProcessingPipeline = (docId: string, fileName: string) => {
+    // 1. Processing (Text extraction)
+    setTimeout(() => {
+      setDocuments(prev => prev.map(doc => {
+        if (doc.id === docId) {
+          if (fileName.endsWith('.exe')) {
+            return { ...doc, status: 'unsupported', error: 'File format not supported. Please upload PDFs, images, or documents.' };
+          }
+          return { ...doc, status: 'processing', progress: 40 };
+        }
+        return doc;
+      }));
 
-    try {
-      let record;
-      setProgress(50);
-      if (type === 'image') {
-        record = await uploadService.uploadImage(selectedFile);
-      } else if (type === 'report') {
-        record = await uploadService.uploadReport(selectedFile);
-      } else {
-        record = await uploadService.uploadPrescription(selectedFile);
-      }
-      setProgress(100);
-      setStatus('success');
-      onUploadSuccess(record?.id || 'mock_rec_id');
-    } catch (err: any) {
-      console.error(err);
-      setStatus('error');
-      setErrorMessage(err.message || 'File upload failed. Ensure the local API is running.');
-    }
+      if (fileName.endsWith('.exe')) return;
+
+      // 2. Analyzing (AI multi-agent reasoning)
+      setTimeout(() => {
+        setDocuments(prev => prev.map(doc => {
+          if (doc.id === docId) {
+            if (fileName.includes('fail') || fileName.includes('corrupt')) {
+              return { ...doc, status: 'failed', error: 'Orchestrator failed to parse document boundaries. Please retry upload.' };
+            }
+            return { ...doc, status: 'analyzing', progress: 75 };
+          }
+          return doc;
+        }));
+
+        if (fileName.includes('fail') || fileName.includes('corrupt')) return;
+
+        // 3. Complete / Results Extraction
+        setTimeout(() => {
+          setDocuments(prev => prev.map(doc => {
+            if (doc.id === docId) {
+              // Handle "No findings" file trigger
+              if (fileName.includes('clean')) {
+                return {
+                  ...doc,
+                  status: 'no_findings',
+                  progress: 100,
+                  result: {
+                    summary: {
+                      docType: doc.category,
+                      date: new Date().toLocaleDateString(),
+                      source: 'Self-Submitted Clinic Scan',
+                      keyInfo: 'Diagnostic scanning logs returned standard physiological benchmarks with no abnormal clinical vectors.'
+                    },
+                    extracted: { medicines: [], symptoms: [], tests: [], measurements: [], conditions: [], instructions: [] },
+                    aiInsight: 'CarePath noticed that this diagnostic file does not contain any abnormal consolidation, cellular variations, or active drug markers. No significant findings identified.'
+                  }
+                };
+              }
+
+              // Handle "Partial extraction" file trigger
+              if (fileName.includes('partial')) {
+                return {
+                  ...doc,
+                  status: 'partial',
+                  progress: 100,
+                  result: {
+                    summary: {
+                      docType: doc.category,
+                      date: new Date().toLocaleDateString(),
+                      source: 'General Medical Records',
+                      keyInfo: 'Medical report containing fragmented patient notes. Some areas were illegible.'
+                    },
+                    extracted: {
+                      medicines: ['Paracetamol (500mg)'],
+                      symptoms: ['Fever'],
+                      tests: [],
+                      measurements: [],
+                      conditions: ['Fever of unknown origin'],
+                      instructions: ['Rest and drink fluids.']
+                    },
+                    aiInsight: 'CarePath noticed partial text markers. Some sections of this report were unreadable or lacked key clinical descriptors. Potentially relevant details suggest temporary antipyretic directions.'
+                  }
+                };
+              }
+
+              // Normal successful full extraction
+              return {
+                ...doc,
+                status: 'complete',
+                progress: 100,
+                result: {
+                  summary: {
+                    docType: doc.category,
+                    date: new Date().toLocaleDateString(),
+                    source: 'Local Health Authority Clinic',
+                    keyInfo: `Parsed parameters from your uploaded ${doc.category.toLowerCase()}.`
+                  },
+                  extracted: {
+                    medicines: doc.category === 'Prescription' ? ['Amoxicillin Oral Capsule'] : [],
+                    symptoms: ['Coughing', 'Slight chest congestion'],
+                    tests: doc.category === 'Lab Report' ? ['Sputum Culture Test'] : [],
+                    measurements: ['Pulse: 72 bpm', 'O2 Saturation: 98%'],
+                    conditions: ['Mild Bronchitis symptoms noticed'],
+                    instructions: ['Keep hydrated and follow scheduled checks.']
+                  },
+                  aiInsight: `CarePath noticed signs of mild congestion in the records. Potentially relevant information includes treatment guidelines for bronchitis. Consider discussing these parsed instructions with your specialist.`
+                }
+              };
+            }
+            return doc;
+          }));
+        }, 1200);
+      }, 1000);
+    }, 800);
+  };
+
+  const handleFileUpload = (file: File) => {
+    const newDocId = `doc_${Date.now()}`;
+    const newDoc: UploadedDoc = {
+      id: newDocId,
+      name: file.name,
+      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      category: category,
+      status: 'uploading',
+      progress: 10,
+      uploadedAt: new Date().toLocaleDateString()
+    };
+
+    setDocuments(prev => [newDoc, ...prev]);
+    setSelectedDocId(newDocId);
+
+    // Run simulated pipeline transitions
+    simulateProcessingPipeline(newDocId, file.name.toLowerCase());
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -70,112 +296,26 @@ function FileWidget({ title, description, type, accept, icon: Icon, onUploadSucc
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      uploadFile(e.dataTransfer.files[0]);
+      handleFileUpload(e.dataTransfer.files[0]);
     }
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      uploadFile(e.target.files[0]);
+      handleFileUpload(e.target.files[0]);
     }
   };
 
-  const resetUploader = () => {
-    setFile(null);
-    setProgress(0);
-    setStatus('idle');
-    setErrorMessage('');
+  const removeDocument = (id: string) => {
+    setDocuments(prev => prev.filter(doc => doc.id !== id));
+    if (selectedDocId === id) {
+      setSelectedDocId(null);
+    }
   };
 
-  return (
-    <div 
-      className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all bg-brand-card min-h-[220px] ${
-        dragActive ? 'border-brand-lavender bg-brand-lavender-light/30' : 'border-brand-slate/20 hover:border-brand-lavender/40'
-      }`}
-      onDragEnter={handleDrag}
-      onDragOver={handleDrag}
-      onDragLeave={handleDrag}
-      onDrop={handleDrop}
-    >
-      {status === 'idle' && (
-        <>
-          <div className="w-12 h-12 rounded-xl bg-brand-bg flex items-center justify-center text-brand-slate mb-4">
-            <Icon className="w-6 h-6" />
-          </div>
-          <h3 className="font-display font-semibold text-sm text-brand-plum mb-1">{title}</h3>
-          <p className="text-brand-slate text-xs mb-4 leading-relaxed max-w-xs">{description}</p>
-          <label className="bg-brand-bg hover:bg-brand-slate/10 text-brand-plum text-xxs font-semibold px-4 py-2.5 rounded-lg border border-brand-slate/15 cursor-pointer transition-all">
-            Choose File
-            <input 
-              type="file" 
-              accept={accept} 
-              className="hidden" 
-              onChange={handleFileInput} 
-            />
-          </label>
-          <span className="text-xxs text-brand-slate/60 mt-2">Accepted formats: {accept}</span>
-        </>
-      )}
-
-      {status === 'uploading' && (
-        <div className="flex flex-col items-center w-full">
-          <Loader2 className="w-8 h-8 text-brand-lavender animate-spin mb-4" />
-          <h4 className="text-xs font-semibold text-brand-plum mb-2">Uploading {file?.name}...</h4>
-          <div className="w-full bg-brand-bg h-1.5 rounded-full overflow-hidden max-w-xs">
-            <div className="bg-brand-lavender h-full transition-all duration-300" style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-      )}
-
-      {status === 'success' && (
-        <>
-          <CheckCircle className="w-10 h-10 text-brand-sage-text mb-4" />
-          <h4 className="text-xs font-semibold text-brand-sage-text mb-1">Upload Successful</h4>
-          <p className="text-xxs text-brand-slate max-w-xs truncate mb-4">{file?.name}</p>
-          <button 
-            onClick={resetUploader}
-            className="text-xxs font-semibold text-brand-slate underline hover:no-underline"
-          >
-            Upload Another
-          </button>
-        </>
-      )}
-
-      {status === 'error' && (
-        <>
-          <AlertCircle className="w-10 h-10 text-brand-rose-text mb-4" />
-          <h4 className="text-xs font-semibold text-brand-rose-text mb-1.5">Upload Failed</h4>
-          <p className="text-xxs text-brand-rose-text max-w-xs mb-4 leading-relaxed">{errorMessage}</p>
-          <div className="flex gap-4">
-            <button 
-              onClick={() => file && uploadFile(file)}
-              className="flex items-center gap-1 bg-brand-rose-bg text-brand-rose-text text-xxs font-semibold px-3 py-2 rounded-lg border border-brand-rose-text/10"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Retry
-            </button>
-            <button 
-              onClick={resetUploader}
-              className="text-xxs font-semibold text-brand-slate underline hover:no-underline"
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-export default function UploadCenterPage() {
-  const { patient } = usePatient();
-  const navigate = useNavigate();
-  const [uploadedRecords, setUploadedRecords] = useState<string[]>([]);
-  const [isStartingAnalysis, setIsStartingAnalysis] = useState(false);
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-
-  const handleUploadSuccess = (recordId: string) => {
-    setUploadedRecords(prev => [...prev, recordId]);
+  const retryUpload = (doc: UploadedDoc) => {
+    setDocuments(prev => prev.map(d => d.id === doc.id ? { ...d, status: 'uploading', progress: 10, error: undefined } : d));
+    simulateProcessingPipeline(doc.id, doc.name.toLowerCase());
   };
 
   const handleBeginAnalysis = async () => {
@@ -185,7 +325,6 @@ export default function UploadCenterPage() {
 
     try {
       if (patient.id === 'demo_patient_id') {
-        // Direct route to results page for demo bypass
         navigate('/analysis/processing?demo=true');
       } else {
         const response = await analysisService.startAnalysis(patient.id);
@@ -193,15 +332,16 @@ export default function UploadCenterPage() {
       }
     } catch (err: any) {
       console.error(err);
-      setAnalysisError(err.message || 'Unable to launch clinical analysis. Ensure the backend api is active.');
+      setAnalysisError(err.message || 'Unable to launch clinical analysis. Ensure local API is active.');
     } finally {
       setIsStartingAnalysis(false);
     }
   };
 
+  const selectedDoc = documents.find(d => d.id === selectedDocId);
+
   return (
     <div className="flex flex-col gap-8">
-
       {analysisError && (
         <div className="bg-brand-rose-bg border border-brand-rose-text/10 text-brand-rose-text p-4 rounded-xl text-sm flex items-center gap-2.5">
           <AlertCircle className="w-5 h-5 shrink-0" />
@@ -209,56 +349,324 @@ export default function UploadCenterPage() {
         </div>
       )}
 
-      {/* Grid of upload widgets */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <FileWidget
-          title="Medical Image"
-          description="Chest X-rays, MRIs, CT scans, ultrasound files, or skin photographs."
-          type="image"
-          accept=".png,.jpg,.jpeg,.dcm"
-          icon={ImageIcon}
-          onUploadSuccess={handleUploadSuccess}
-        />
+      {/* Grid: Uploader on Left, Uploaded List on Right */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
+        
+        {/* Left: Uploader (3 Cols) */}
+        <div className="lg:col-span-3 bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-xxs flex flex-col gap-5">
+          <div>
+            <h3 className="font-display font-bold text-sm text-brand-plum">Submit Diagnostic Records</h3>
+            <p className="text-brand-slate text-xs font-light mt-0.5">Choose document category and drag file to analyze.</p>
+          </div>
 
-        <FileWidget
-          title="Medical Report"
-          description="Lab work reports, blood panels, clinical letters, or pathology papers."
-          type="report"
-          accept=".pdf,.txt,.docx"
-          icon={FileText}
-          onUploadSuccess={handleUploadSuccess}
-        />
+          {/* Category Dropdown */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-bold text-brand-slate uppercase tracking-wider">Document Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as any)}
+              className="bg-brand-bg border border-brand-slate/15 rounded-xl px-4 py-2.5 text-xs text-brand-plum outline-none focus:border-brand-lavender transition-all cursor-pointer font-medium"
+            >
+              <option value="Prescription">Prescription</option>
+              <option value="Lab Report">Lab Report</option>
+              <option value="Medical Report">Medical Report</option>
+              <option value="Imaging/Scan">Imaging/Scan</option>
+              <option value="Other medical document">Other medical document</option>
+            </select>
+          </div>
 
-        <FileWidget
-          title="Prescription Script"
-          description="Active medications list, pharmaceutical scripts, or dosing directions."
-          type="prescription"
-          accept=".png,.jpg,.pdf"
-          icon={Clipboard}
-          onUploadSuccess={handleUploadSuccess}
-        />
+          {/* Drag & Drop Area */}
+          <div
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all bg-brand-bg/30 min-h-[220px] cursor-pointer ${
+              dragActive ? 'border-brand-lavender bg-brand-lavender-light/35' : 'border-brand-slate/20 hover:border-brand-lavender/40'
+            }`}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-brand-lavender-light text-brand-lavender flex items-center justify-center mb-4">
+              <UploadCloud className="w-6 h-6 animate-pulse" />
+            </div>
+            <h4 className="font-display font-semibold text-xs text-brand-plum mb-1">Drag and drop file here</h4>
+            <p className="text-brand-slate text-[11px] font-light max-w-xs mb-4">Support PDF, PNG, JPG, or DOCX formats up to 10MB.</p>
+            
+            <label className="bg-brand-card hover:bg-brand-bg border border-brand-slate/15 text-brand-plum text-[10px] font-bold px-4 py-2 rounded-xl transition-all shadow-xxs cursor-pointer">
+              Browse Files
+              <input
+                type="file"
+                className="hidden"
+                accept=".pdf,.png,.jpg,.jpeg,.docx,.doc,.txt"
+                onChange={handleFileInput}
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* Right: Uploaded List (2 Cols) */}
+        <div className="lg:col-span-2 bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-xxs flex flex-col gap-4">
+          <div>
+            <h3 className="font-display font-bold text-sm text-brand-plum">Uploaded Documents</h3>
+            <p className="text-brand-slate text-xs font-light mt-0.5">Manage and view extraction reports.</p>
+          </div>
+
+          {documents.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 border border-dashed border-brand-slate/15 rounded-2xl">
+              <FolderOpen className="w-8 h-8 text-brand-slate/40 mb-2" />
+              <p className="text-xxs text-brand-slate font-light">No documents submitted yet.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 max-h-[360px] overflow-y-auto pr-1">
+              {documents.map((doc) => {
+                const isSelected = selectedDocId === doc.id;
+                return (
+                  <div
+                    key={doc.id}
+                    onClick={() => doc.status !== 'uploading' && setSelectedDocId(doc.id)}
+                    className={`border rounded-2xl p-3.5 transition-all flex items-start justify-between gap-3 cursor-pointer ${
+                      isSelected 
+                        ? 'border-brand-lavender bg-brand-lavender-light/10 shadow-xxs' 
+                        : 'border-brand-slate/10 bg-brand-card hover:border-brand-slate/20'
+                    }`}
+                  >
+                    <div className="min-w-0 flex gap-2.5 items-start">
+                      <FileText className="w-4 h-4 text-brand-lavender shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-brand-plum truncate block leading-tight">{doc.name}</span>
+                        <span className="text-[10px] text-brand-slate font-light block mt-0.5">
+                          {doc.category} &bull; {doc.size}
+                        </span>
+
+                        {/* Visual Progress / Ticker Status */}
+                        <div className="flex items-center gap-1.5 mt-2">
+                          {doc.status === 'uploading' && (
+                            <div className="w-full flex items-center gap-2">
+                              <div className="w-20 bg-brand-bg h-1 rounded-full overflow-hidden shrink-0">
+                                <div className="bg-brand-lavender h-full transition-all" style={{ width: `${doc.progress}%` }} />
+                              </div>
+                              <span className="text-[9px] font-bold text-brand-lavender">Uploading</span>
+                            </div>
+                          )}
+                          {doc.status === 'processing' && (
+                            <span className="text-[9px] font-bold text-brand-amber-text bg-brand-amber-bg border border-brand-amber-text/10 px-1.5 py-0.25 rounded-md flex items-center gap-1">
+                              <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                              Processing
+                            </span>
+                          )}
+                          {doc.status === 'analyzing' && (
+                            <span className="text-[9px] font-bold text-brand-lavender bg-brand-lavender-light border border-brand-lavender/10 px-1.5 py-0.25 rounded-md flex items-center gap-1">
+                              <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                              AI Analyzing
+                            </span>
+                          )}
+                          {(doc.status === 'complete' || doc.status === 'no_findings') && (
+                            <span className="text-[9px] font-bold text-brand-sage-text bg-brand-sage-bg border border-brand-sage-text/10 px-1.5 py-0.25 rounded-md flex items-center gap-0.5">
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              Ready
+                            </span>
+                          )}
+                          {doc.status === 'partial' && (
+                            <span className="text-[9px] font-bold text-brand-amber-text bg-brand-amber-bg border border-brand-amber-text/10 px-1.5 py-0.25 rounded-md flex items-center gap-0.5">
+                              <AlertTriangle className="w-2.5 h-2.5" />
+                              Partial
+                            </span>
+                          )}
+                          {doc.status === 'failed' && (
+                            <span className="text-[9px] font-bold text-brand-rose-text bg-brand-rose-bg border border-brand-rose-text/10 px-1.5 py-0.25 rounded-md flex items-center gap-0.5">
+                              <AlertCircle className="w-2.5 h-2.5" />
+                              Failed
+                            </span>
+                          )}
+                          {doc.status === 'unsupported' && (
+                            <span className="text-[9px] font-bold text-brand-rose-text bg-brand-rose-bg border border-brand-rose-text/10 px-1.5 py-0.25 rounded-md flex items-center gap-0.5">
+                              <AlertCircle className="w-2.5 h-2.5" />
+                              Unsupported
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Trash / Retry CTA */}
+                    <div className="shrink-0 flex gap-2">
+                      {doc.status === 'failed' && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); retryUpload(doc); }}
+                          title="Retry Analysis"
+                          className="p-1 hover:bg-brand-rose-bg rounded-lg text-brand-rose-text transition-all cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeDocument(doc.id); }}
+                        title="Remove Document"
+                        className="p-1 hover:bg-brand-rose-bg rounded-lg text-brand-slate hover:text-brand-rose-text transition-all cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Actions and Begin Analysis */}
-      <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 mt-4">
+      {/* Selected Document Analysis Output */}
+      {selectedDoc && (selectedDoc.status === 'complete' || selectedDoc.status === 'partial' || selectedDoc.status === 'no_findings') && selectedDoc.result && (
+        <div className="bg-brand-card border border-brand-slate/10 p-6 md:p-8 rounded-3xl shadow-sm flex flex-col gap-6 animate-in fade-in duration-300">
+          <div className="flex items-center gap-2.5 border-b border-brand-slate/10 pb-4">
+            <div className="w-8 h-8 bg-brand-lavender text-white rounded-xl flex items-center justify-center shrink-0">
+              <Activity className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <h3 className="font-display font-extrabold text-sm text-brand-plum">AI Clinical Extraction Report</h3>
+              <p className="text-brand-slate text-[11px] font-light mt-0.5">Results parsed from file: <span className="font-semibold text-brand-plum">{selectedDoc.name}</span></p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            {/* Left: Document Summary */}
+            <div className="md:col-span-2 bg-brand-bg/50 border border-brand-slate/10 p-5 rounded-2xl flex flex-col gap-4">
+              <h4 className="font-display text-[10px] font-bold tracking-wider text-brand-slate uppercase border-b border-brand-slate/10 pb-2">Document Summary</h4>
+              
+              <div className="flex flex-col gap-3 text-xxs leading-relaxed font-light text-brand-slate">
+                <div>
+                  <span className="font-bold text-brand-plum block">Document Category Type</span>
+                  <span>{selectedDoc.result.summary.docType}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-brand-plum block">Source / Institution</span>
+                  <span>{selectedDoc.result.summary.source}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-brand-plum block">Issue Date</span>
+                  <span className="flex items-center gap-1 mt-0.5">
+                    <Calendar className="w-3.5 h-3.5 text-brand-slate/60" />
+                    {selectedDoc.result.summary.date}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-bold text-brand-plum block">Key Extract Overview</span>
+                  <span className="text-brand-plum mt-1 block italic bg-brand-card p-3 rounded-lg border border-brand-slate/5">
+                    "{selectedDoc.result.summary.keyInfo}"
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Extracted Facts Grid */}
+            <div className="md:col-span-3 flex flex-col gap-4">
+              <h4 className="font-display text-[10px] font-bold tracking-wider text-brand-slate uppercase border-b border-brand-slate/10 pb-2">Clinical Facts Extracted</h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Medicines */}
+                <div className="border border-brand-slate/10 p-4 rounded-xl">
+                  <span className="text-[9px] font-bold text-brand-slate uppercase block mb-1">Medicines Mentioned</span>
+                  {selectedDoc.result.extracted.medicines.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {selectedDoc.result.extracted.medicines.map((med, idx) => (
+                        <span key={idx} className="bg-brand-lavender-light text-brand-lavender text-xxs font-semibold px-2.5 py-0.5 rounded-full border border-brand-lavender/5">{med}</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xxs text-brand-slate/60 font-light block mt-1.5">No active drug compounds found.</span>
+                  )}
+                </div>
+
+                {/* Symptoms */}
+                <div className="border border-brand-slate/10 p-4 rounded-xl">
+                  <span className="text-[9px] font-bold text-brand-slate uppercase block mb-1">Symptoms Extracted</span>
+                  {selectedDoc.result.extracted.symptoms.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {selectedDoc.result.extracted.symptoms.map((sym, idx) => (
+                        <span key={idx} className="bg-brand-amber-bg text-brand-amber-text text-xxs font-semibold px-2.5 py-0.5 rounded-full border border-brand-amber-text/10">{sym}</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xxs text-brand-slate/60 font-light block mt-1.5">No explicit symptoms parsed.</span>
+                  )}
+                </div>
+
+                {/* Tests & Measurements */}
+                <div className="border border-brand-slate/10 p-4 rounded-xl">
+                  <span className="text-[9px] font-bold text-brand-slate uppercase block mb-1">Tests & Measurements</span>
+                  {selectedDoc.result.extracted.tests.length > 0 || selectedDoc.result.extracted.measurements.length > 0 ? (
+                    <div className="flex flex-col gap-1 mt-1.5">
+                      {selectedDoc.result.extracted.tests.map((t, i) => (
+                        <span key={i} className="text-xxs text-brand-plum font-semibold block">&bull; {t}</span>
+                      ))}
+                      {selectedDoc.result.extracted.measurements.map((m, i) => (
+                        <span key={i} className="text-xxs text-brand-slate font-light block">&bull; {m}</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xxs text-brand-slate/60 font-light block mt-1.5">No test measurements found.</span>
+                  )}
+                </div>
+
+                {/* Diagnoses & Conditions */}
+                <div className="border border-brand-slate/10 p-4 rounded-xl">
+                  <span className="text-[9px] font-bold text-brand-slate uppercase block mb-1">Diagnoses / Conditions Mentioned</span>
+                  {selectedDoc.result.extracted.conditions.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {selectedDoc.result.extracted.conditions.map((cond, idx) => (
+                        <span key={idx} className="bg-brand-rose-bg text-brand-rose-text text-xxs font-semibold px-2.5 py-0.5 rounded-full border border-brand-rose-text/10">{cond}</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xxs text-brand-slate/60 font-light block mt-1.5">No diagnoses mentioned.</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Instructions */}
+              {selectedDoc.result.extracted.instructions.length > 0 && (
+                <div className="border border-brand-slate/10 p-4 rounded-xl">
+                  <span className="text-[9px] font-bold text-brand-slate uppercase block mb-1.5">Instructions</span>
+                  <ul className="flex flex-col gap-1 list-disc pl-4 text-xxs text-brand-plum font-light leading-relaxed">
+                    {selectedDoc.result.extracted.instructions.map((inst, idx) => (
+                      <li key={idx}>{inst}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* AI Insight Section (Clearly Segregated from clinical facts) */}
+          <div className="bg-brand-lavender-light/35 border-l-2 border-brand-lavender p-5 rounded-r-2xl mt-2 flex gap-3">
+            <Info className="w-5 h-5 text-brand-lavender shrink-0 mt-0.5" />
+            <div>
+              <span className="text-xs font-bold text-brand-lavender uppercase tracking-wider block">AI Insight</span>
+              <p className="text-xs text-brand-plum leading-relaxed font-light mt-1">
+                {selectedDoc.result.aiInsight}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ready to Analyze Bottom Banner */}
+      <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2">
         <div>
-          <h3 className="font-display font-semibold text-sm text-brand-plum">Ready to analyze?</h3>
-          <p className="text-brand-slate text-xs mt-0.5 max-w-lg">
-            {uploadedRecords.length > 0
-              ? `You have uploaded ${uploadedRecords.length} document(s). Tap below to send this metadata to the clinical reasoning engines.`
-              : 'Add at least one medical document or photograph above to activate the CarePath multi-agent analysis.'}
+          <h3 className="font-display font-semibold text-sm text-brand-plum">Ready to begin multi-agent pipeline?</h3>
+          <p className="text-brand-slate text-xs mt-0.5 max-w-lg font-light">
+            Tap below to execute clinical reasoning engines over your extracted diagnostic context.
           </p>
         </div>
 
         <button
           onClick={handleBeginAnalysis}
-          disabled={uploadedRecords.length === 0 && patient?.id !== 'demo_patient_id' || isStartingAnalysis}
+          disabled={documents.length === 0 || isStartingAnalysis}
           className="bg-brand-lavender hover:bg-brand-lavender-hover disabled:bg-brand-slate/25 disabled:text-brand-slate/50 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer shrink-0"
         >
           {isStartingAnalysis ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Initializing Engines...
+              Initializing Orchestrator...
             </>
           ) : (
             <>

@@ -7,7 +7,9 @@ import {
   CalendarCheck, 
   Bell, 
   User,
-  Settings
+  Settings,
+  Pill,
+  Stethoscope
 } from 'lucide-react';
 
 export interface NavItem {
@@ -62,10 +64,24 @@ export const navigationConfig: NavItem[] = [
     showInSidebar: true
   },
   {
+    path: '/medications',
+    name: 'Medications',
+    subtitle: 'Track active medication courses and log compliance check-ins.',
+    icon: Pill,
+    showInSidebar: true
+  },
+  {
     path: '/followup',
     name: 'Follow-up',
     subtitle: 'Record daily symptom status and log recovery check-ins.',
     icon: CalendarCheck,
+    showInSidebar: true
+  },
+  {
+    path: '/doctor-bridge',
+    name: 'Doctor Bridge',
+    subtitle: 'Prepare appointment briefs and sync guidelines with your doctor.',
+    icon: Stethoscope,
     showInSidebar: true
   },
   {

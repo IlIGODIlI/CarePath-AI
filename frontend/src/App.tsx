@@ -22,6 +22,8 @@ import FollowUpPage from './pages/FollowUpPage';
 import NotificationsPage from './pages/NotificationsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SettingsPage from './pages/SettingsPage';
+import MedicationsPage from './pages/MedicationsPage';
+import DoctorBridgePage from './pages/DoctorBridgePage';
 
 // Protected Route Guard
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -78,6 +80,10 @@ export default function App() {
           <Route path="/journey" element={<TimelinePage />} />
           {/* Medical Records */}
           <Route path="/records" element={<MedicalRecordsPage />} />
+          {/* Medications */}
+          <Route path="/medications" element={<MedicationsPage />} />
+          {/* Doctor Bridge */}
+          <Route path="/doctor-bridge" element={<DoctorBridgePage />} />
           {/* Follow-up */}
           <Route path="/followup" element={<FollowUpPage />} />
           <Route path="/follow-up" element={<FollowUpPage />} />
