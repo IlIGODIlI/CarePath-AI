@@ -28,3 +28,28 @@ def add_timeline_event(session: Session, data: dict) -> TimelineEvent:
         visible_to_patient=data.get("visible_to_patient", True),
         created_at=now
     )
+
+def auto_log_timeline_event(
+    session: Session,
+    user_id: Any,
+    event_type: str,
+    event_title: str,
+    event_description: str = "",
+    severity: str = "MEDIUM",
+    related_record_id: Optional[Any] = None,
+    related_record_type: Optional[str] = None
+) -> TimelineEvent:
+    """Helper to auto-persist a timeline event from background domain services."""
+    return add_timeline_event(
+        session=session,
+        data={
+            "user_id": str(user_id),
+            "event_type": event_type,
+            "event_title": event_title,
+            "event_description": event_description,
+            "severity": severity,
+            "related_record_id": str(related_record_id) if related_record_id else None,
+            "related_record_type": related_record_type
+        }
+    )
+

@@ -48,3 +48,8 @@ def update_medication_status(
     if not updated:
         raise HTTPException(status_code=404, detail="Medication record not found")
     return updated
+
+@router.get("/{patient_id}/adherence")
+def get_medication_adherence(patient_id: str, db: Session = Depends(get_db)):
+    return medication_service.get_medication_adherence(db, patient_id)
+
