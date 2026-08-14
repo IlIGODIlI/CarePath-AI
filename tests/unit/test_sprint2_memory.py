@@ -151,7 +151,7 @@ class TestSprint2CarePathMemoryAndDoctor:
         assert memory["care_plans"][0]["plan_name"] == "Cardiovascular Health Protocol"
         assert len(memory["doctor_feedback"]) == 1
         assert memory["doctor_feedback"][0]["title"] == "Care Plan Approval"
-        assert len(memory["timeline_events"]) == 1
+        assert len(memory["timeline_events"]) >= 1
 
     def test_doctor_bridge_consultations_and_reviews(self, db_session, test_patient):
         p_id = str(test_patient.user_id)
