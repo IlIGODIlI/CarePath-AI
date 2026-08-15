@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePatient } from '../context/PatientContext';
-import { AlertCircle, CheckCircle2, User, Save } from 'lucide-react';
+import { AlertCircle, CheckCircle2, User, Save, Heart, ShieldAlert } from 'lucide-react';
 
 export default function ProfilePage() {
   const { patient, updatePatientProfile, isLoading, error } = usePatient();
@@ -119,26 +119,32 @@ export default function ProfilePage() {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-brand-slate px-0.5">Blood Type</label>
-            <input
-              type="text"
-              placeholder="e.g. O+, A-"
-              value={bloodType}
-              onChange={(e) => setBloodType(e.target.value)}
-              className="w-full bg-brand-bg border border-brand-slate/15 rounded-xl px-4 py-3 text-sm focus:border-brand-lavender focus:ring-1 focus:ring-brand-lavender outline-none transition-all"
-            />
+            <div className="relative">
+              <Heart className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-slate" />
+              <input
+                type="text"
+                placeholder="e.g. O+, A-"
+                value={bloodType}
+                onChange={(e) => setBloodType(e.target.value)}
+                className="w-full bg-brand-bg border border-brand-slate/15 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-brand-lavender focus:ring-1 focus:ring-brand-lavender outline-none transition-all"
+              />
+            </div>
           </div>
         </div>
 
         {/* Medical details fields */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-brand-slate px-0.5">Allergies (comma-separated)</label>
-          <input
-            type="text"
-            placeholder="e.g. Penicillin, Peanuts, Pollen"
-            value={allergiesInput}
-            onChange={(e) => setAllergiesInput(e.target.value)}
-            className="w-full bg-brand-bg border border-brand-slate/15 rounded-xl px-4 py-3 text-sm focus:border-brand-lavender focus:ring-1 focus:ring-brand-lavender outline-none transition-all"
-          />
+          <div className="relative">
+            <ShieldAlert className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-slate" />
+            <input
+              type="text"
+              placeholder="e.g. Penicillin, Peanuts, Pollen"
+              value={allergiesInput}
+              onChange={(e) => setAllergiesInput(e.target.value)}
+              className="w-full bg-brand-bg border border-brand-slate/15 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-brand-lavender focus:ring-1 focus:ring-brand-lavender outline-none transition-all"
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">

@@ -129,16 +129,8 @@ export default function DoctorBridgePage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-brand-plum mb-1">
-            CarePath Doctor Bridge
-          </h1>
-          <p className="text-brand-slate text-xs font-light">
-            Prepare clinical summaries, structure questions, and sync guidelines with your doctor.
-          </p>
-        </div>
-        {currentReview && (
+      {currentReview && (
+        <div className="flex items-center justify-end gap-4 flex-wrap border-b border-brand-slate/10 pb-4">
           <button
             onClick={handleResetBridge}
             className="flex items-center gap-1.5 text-xxs font-bold text-brand-rose-text hover:text-brand-rose-text/80 border border-brand-rose-text/10 px-3.5 py-2 rounded-xl bg-brand-rose-bg/20 transition-all cursor-pointer"
@@ -146,8 +138,8 @@ export default function DoctorBridgePage() {
             <RotateCcw className="w-3.5 h-3.5" />
             Reset Simulation
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Progress Tracker Stepper (Navigation Block) */}
       <div className="bg-brand-card border border-brand-slate/10 p-4 rounded-2xl shadow-xxs">

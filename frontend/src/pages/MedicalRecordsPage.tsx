@@ -90,13 +90,25 @@ export default function MedicalRecordsPage() {
     }
   };
 
-  // Filter records based on category
   const filteredRecords = activeCategory === 'all' 
     ? records 
     : records.filter(r => r.type === activeCategory);
 
   const getRecordIcon = (type: RecordType) => {
     switch (type) {
+      case 'image':
+        return ImageIcon;
+      case 'report':
+        return FileText;
+      case 'prescription':
+        return Clipboard;
+    }
+  };
+
+  const getCategoryIcon = (cat: 'all' | RecordType) => {
+    switch (cat) {
+      case 'all':
+        return FolderOpen;
       case 'image':
         return ImageIcon;
       case 'report':
@@ -121,19 +133,23 @@ export default function MedicalRecordsPage() {
 
       {/* Filter Tabs */}
       <div className="flex gap-2 border-b border-brand-slate/10 pb-1">
-        {(['all', 'image', 'report', 'prescription'] as const).map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-4 py-2.5 text-xs font-semibold capitalize rounded-t-xl transition-all border-b-2 -mb-1.5 cursor-pointer ${
-              activeCategory === cat 
-                ? 'border-brand-lavender text-brand-lavender font-bold' 
-                : 'border-transparent text-brand-slate hover:text-brand-plum'
-            }`}
-          >
-            {cat === 'all' ? 'All Documents' : `${cat}s`}
-          </button>
-        ))}
+        {(['all', 'image', 'report', 'prescription'] as const).map((cat) => {
+          const Icon = getCategoryIcon(cat);
+          return (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-2.5 text-xs font-semibold capitalize rounded-t-xl transition-all border-b-2 -mb-1.5 cursor-pointer flex items-center gap-1.5 ${
+                activeCategory === cat 
+                  ? 'border-brand-lavender text-brand-lavender font-bold' 
+                  : 'border-transparent text-brand-slate hover:text-brand-plum'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {cat === 'all' ? 'All Documents' : `${cat}s`}
+            </button>
+          );
+        })}
       </div>
 
       {isLoading ? (

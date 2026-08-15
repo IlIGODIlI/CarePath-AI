@@ -9,8 +9,10 @@
   --color-brand-lavender-hover: #4A3080;
   --color-brand-plum: #1E1625; /* Deep Obsidian Slate */
   --color-brand-slate: #5C5761; /* Soft Charcoal secondary text */
-  --color-brand-sage-bg: #E9F3EC;
-  --color-brand-sage-text: #3A845A;
+  --color-brand-sage-bg: #F0F4EF;
+  --color-brand-sage-text: #709163;
+  --color-brand-sage-primary: #8FAF82;
+  --color-brand-sage-hover: #7E9E72;
   --color-brand-rose-bg: #FDF2F2;
   --color-brand-rose-text: #B33939;
   --color-brand-amber-bg: #FEF6EA;
@@ -18,6 +20,8 @@
 
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Outfit', system-ui, sans-serif;
+
+  --font-size-xxs: 0.625rem; /* 10px */
 }
 
 @layer base {

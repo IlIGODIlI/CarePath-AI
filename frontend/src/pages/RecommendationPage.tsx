@@ -214,8 +214,8 @@ export default function RecommendationPage() {
             )}
           </div>
 
-          <div className="text-xxs text-brand-slate/75 leading-relaxed bg-brand-bg p-3.5 rounded-xl border border-brand-slate/10">
-            <span className="font-bold text-xxs text-brand-plum uppercase block mb-1">Healthcare Advisory:</span>
+          <div className="text-xs text-brand-slate/75 leading-relaxed bg-brand-bg p-3.5 rounded-xl border border-brand-slate/10">
+            <span className="font-bold text-xs text-brand-plum uppercase block mb-1">Healthcare Advisory:</span>
             CarePath suggestions are autonomous advisory recommendations. We provide healthcare navigation support, which does not replace qualified diagnostic procedures, medical triage, or doctors prescriptions.
           </div>
         </div>

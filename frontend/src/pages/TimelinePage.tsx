@@ -144,25 +144,6 @@ export default function TimelinePage() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap border-b border-brand-slate/10 pb-4">
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-brand-plum mb-1">
-            My Care Timeline
-          </h1>
-          <p className="text-brand-slate text-xs font-light">
-            Your continuous chronological healthcare mapping history and actions.
-          </p>
-        </div>
-        <button
-          onClick={() => setModalOpen(true)}
-          className="flex items-center justify-center gap-1.5 bg-brand-lavender hover:bg-brand-lavender-hover text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Add Timeline Event
-        </button>
-      </div>
-
       {error && (
         <div className="bg-brand-rose-bg border border-brand-rose-text/10 text-brand-rose-text p-4 rounded-xl text-sm flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -173,30 +154,42 @@ export default function TimelinePage() {
         </div>
       )}
 
-      {/* Filter Chips Bar */}
-      <div className="flex flex-wrap gap-2.5 pb-2">
-        {[
-          'All',
-          'Symptoms',
-          'Tests',
-          'Documents',
-          'Medication',
-          'Doctor',
-          'AI Insights',
-          'Follow-up'
-        ].map(filter => (
-          <button
-            key={filter}
-            onClick={() => setActiveFilter(filter)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-              activeFilter === filter
-                ? 'bg-brand-plum text-white border-brand-plum shadow-xxs'
-                : 'bg-brand-card border-brand-slate/10 text-brand-slate hover:border-brand-slate/20 hover:bg-brand-bg/50'
-            }`}
-          >
-            {filter}
-          </button>
-        ))}
+      {/* Filter and Action Header Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-brand-slate/10 pb-4">
+        {/* Filter Chips */}
+        <div className="flex flex-wrap gap-2.5">
+          {[
+            'All',
+            'Symptoms',
+            'Tests',
+            'Documents',
+            'Medication',
+            'Doctor',
+            'AI Insights',
+            'Follow-up'
+          ].map(filter => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                activeFilter === filter
+                  ? 'bg-brand-plum text-white border-brand-plum shadow-xxs'
+                  : 'bg-brand-card border-brand-slate/10 text-brand-slate hover:border-brand-slate/20 hover:bg-brand-bg/50'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+
+        {/* Action Button */}
+        <button
+          onClick={() => setModalOpen(true)}
+          className="flex items-center justify-center gap-1.5 bg-brand-lavender hover:bg-brand-lavender-hover text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer shrink-0 self-end md:self-auto"
+        >
+          <PlusCircle className="w-4 h-4" />
+          Add Timeline Event
+        </button>
       </div>
 
       {/* Grid: Timeline Flow on Left, Selected Event Details on Right */}
@@ -218,61 +211,52 @@ export default function TimelinePage() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-          {/* Left: Interactive Vertical Thread Timeline (3 Cols) */}
-          <div className="lg:col-span-3 flex flex-col relative border-l border-brand-slate/15 ml-4 pl-6 md:pl-8 py-2 gap-6">
-            {filteredEvents.map((event) => {
-              const meta = getEventMeta(event.type);
-              const Icon = meta.icon;
-              const isSelected = selectedEvent?.id === event.id;
+        selectedEvent ? (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+            {/* Left: Interactive Vertical Thread Timeline (3 Cols) */}
+            <div className="lg:col-span-3 flex flex-col relative border-l border-brand-slate/15 ml-4 pl-6 md:pl-8 py-2 gap-6">
+              {filteredEvents.map((event) => {
+                const meta = getEventMeta(event.type);
+                const Icon = meta.icon;
+                const isSelected = selectedEvent?.id === event.id;
 
-              return (
-                <div 
-                  key={event.id} 
-                  onClick={() => setSelectedEvent(event)}
-                  className="relative group cursor-pointer"
-                >
-                  {/* Timeline circle node */}
-                  <div className={`absolute -left-10.5 md:-left-12.5 top-1.5 w-9 h-9 rounded-full border flex items-center justify-center shadow-xxs transition-all ${meta.bg} ${
-                    isSelected ? 'ring-2 ring-brand-plum border-brand-plum scale-110' : 'group-hover:scale-105'
-                  }`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-
-                  {/* Event Card */}
-                  <div className={`border rounded-2xl p-4 md:p-5 shadow-xxs transition-all flex flex-col gap-2 ${
-                    isSelected 
-                      ? 'border-brand-lavender bg-brand-lavender-light/10 ring-1 ring-brand-lavender/10' 
-                      : 'border-brand-slate/10 bg-brand-card hover:border-brand-slate/20 hover:shadow-xs'
-                  }`}>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-brand-slate/5 pb-2">
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border max-w-fit ${meta.bg}`}>
-                        {meta.label}
-                      </span>
-                      
-                      <span className="text-[10px] text-brand-slate/60 font-light flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {new Date(event.timestamp).toLocaleDateString(undefined, { 
-                          month: 'short', 
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </span>
+                return (
+                  <div 
+                    key={event.id} 
+                    onClick={() => setSelectedEvent(event)}
+                    className="relative group cursor-pointer"
+                  >
+                    {/* Timeline circle node */}
+                    <div className={`absolute -left-10.5 md:-left-12.5 top-1.5 w-9 h-9 rounded-full border flex items-center justify-center shadow-xxs transition-all ${meta.bg} ${
+                      isSelected ? 'ring-2 ring-brand-plum border-brand-plum scale-110' : 'group-hover:scale-105'
+                    }`}>
+                      <Icon className="w-4 h-4" />
                     </div>
 
-                    <h3 className="font-display font-bold text-sm text-brand-plum mt-1">{event.title}</h3>
-                    <p className="text-brand-slate text-xs leading-relaxed font-light">
-                      {event.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                    {/* Event Card */}
+                    <div className={`border rounded-2xl p-4 md:p-5 shadow-xxs transition-all flex flex-col gap-2 ${
+                      isSelected 
+                        ? 'border-brand-lavender bg-brand-lavender-light/10 ring-1 ring-brand-lavender/10' 
+                        : 'border-brand-slate/10 bg-brand-card hover:border-brand-slate/20 hover:shadow-xs'
+                    }`}>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-brand-slate/5 pb-2">
+                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border max-w-fit ${meta.bg}`}>
+                          {meta.label}
+                        </span>
+                      </div>
 
-          {/* Right: Selected Event Details Panel (2 Cols) */}
-          <div className="lg:col-span-2 lg:sticky lg:top-4 flex flex-col gap-6">
-            {selectedEvent ? (
+                      <h3 className="font-display font-bold text-xs text-brand-plum mt-1">{event.title}</h3>
+                      <p className="text-brand-slate text-xxs leading-relaxed font-light">
+                        {event.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Right: Selected Event Details Panel (2 Cols) */}
+            <div className="lg:col-span-2 lg:sticky lg:top-4 flex flex-col gap-6 w-full">
               <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-5 animate-in fade-in duration-300">
                 <div className="flex justify-between items-start border-b border-brand-slate/10 pb-4">
                   <div>
@@ -293,8 +277,8 @@ export default function TimelinePage() {
                     <span className="text-xs">{getEventMeta(selectedEvent.type).label}</span>
                   </div>
                   <div>
-                    <span className="font-bold text-brand-plum block">Timestamp</span>
-                    <span>
+                    <span className="font-bold text-brand-plum block">Milestone Date</span>
+                    <span className="text-xs text-brand-plum">
                       {new Date(selectedEvent.timestamp).toLocaleDateString(undefined, { 
                         weekday: 'long',
                         month: 'long', 
@@ -332,21 +316,38 @@ export default function TimelinePage() {
                   </Link>
                 </div>
               </div>
-            ) : (
-              <div className="bg-brand-card border border-brand-slate/10 p-8 rounded-3xl text-center flex flex-col items-center gap-4 py-16 shadow-xxs">
-                <div className="w-12 h-12 bg-brand-bg rounded-2xl flex items-center justify-center text-brand-slate/40">
-                  <TrendingUp className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-display font-bold text-xs text-brand-plum">Milestone Deep-dive</h4>
-                  <p className="text-[11px] text-brand-slate font-light max-w-xs mt-1.5">
-                    Click any timeline event card on the left to inspect detailed clinical annotations and follow associated routing links.
-                  </p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        ) : (
+          /* STATE 1: NO EVENT SELECTED - Full Width 3-Column Card Grid */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full py-2">
+            {filteredEvents.map((event) => {
+              const meta = getEventMeta(event.type);
+
+              return (
+                <div 
+                  key={event.id} 
+                  onClick={() => setSelectedEvent(event)}
+                  className="relative group cursor-pointer"
+                >
+                  {/* Event Card (no timeline thread node needed here) */}
+                  <div className="border border-brand-slate/10 bg-brand-card hover:border-brand-slate/20 rounded-2xl p-5 shadow-xxs hover:shadow-xs transition-all flex flex-col gap-2 h-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-brand-slate/5 pb-2">
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border max-w-fit ${meta.bg}`}>
+                        {meta.label}
+                      </span>
+                    </div>
+
+                    <h3 className="font-display font-bold text-xs text-brand-plum mt-1">{event.title}</h3>
+                    <p className="text-brand-slate text-xxs leading-relaxed font-light line-clamp-2">
+                      {event.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
       )}
 
       {/* Add Event Modal Overlay */}

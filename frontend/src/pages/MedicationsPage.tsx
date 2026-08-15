@@ -43,24 +43,6 @@ export default function MedicationsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-brand-plum mb-1">
-            Medication Companion
-          </h1>
-          <p className="text-brand-slate text-xs font-light">
-            Monitor active treatment courses and log daily drug adherence metrics.
-          </p>
-        </div>
-        <button
-          onClick={resetDailyTracker}
-          className="text-xxs font-bold text-brand-lavender hover:text-brand-lavender-hover border border-brand-lavender/20 px-3.5 py-2 rounded-xl bg-brand-lavender-light/10 transition-all cursor-pointer"
-        >
-          Reset Logs
-        </button>
-      </div>
-
       {/* Adherence Summary Panel */}
       <div className="bg-brand-card border border-brand-slate/10 p-6 md:p-8 rounded-3xl shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
         
@@ -176,6 +158,14 @@ export default function MedicationsPage() {
               </div>
             </div>
           )}
+
+          {/* Reset Daily Logs Action */}
+          <button
+            onClick={resetDailyTracker}
+            className="w-full text-center text-xxs font-bold text-brand-lavender hover:text-brand-lavender-hover border border-brand-lavender/20 py-2.5 rounded-xl bg-brand-lavender-light/10 transition-all cursor-pointer shadow-xxs"
+          >
+            Reset Logs
+          </button>
 
           {/* Today's Schedule Overview */}
           <div className="bg-brand-card border border-brand-slate/10 p-5 rounded-3xl shadow-sm flex flex-col gap-4">

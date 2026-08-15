@@ -224,23 +224,23 @@ export default function DashBoardingPage() {
       </div>
 
       {/* 2. NEXT ACTION (Highest Prominence Hero Row) */}
-      <div className="bg-gradient-to-r from-brand-lavender to-brand-plum p-6 md:p-8 rounded-3xl text-white shadow-md relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group hover:shadow-lg transition-all duration-300">
+      <div className="bg-brand-lavender p-6 md:p-8 rounded-3xl shadow-md relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group hover:shadow-lg transition-all duration-300">
         {/* Glow visual effects */}
         <div className="absolute top-0 right-0 w-36 h-36 bg-white/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-xl -ml-6 -mb-6 pointer-events-none" />
 
         <div className="flex-1 flex gap-4 items-start min-w-0">
           <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0 border border-white/20 mt-1 animate-pulse">
-            <Stethoscope className="w-6 h-6 stroke-[2.2]" />
+            <Stethoscope className="w-6 h-6 stroke-[2.2] text-white" />
           </div>
           <div className="min-w-0 flex flex-col gap-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-white/70 block">Next Action Priority</span>
-            <h2 className="font-display text-lg md:text-xl font-bold leading-snug">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-white/85 block">Next Action Priority</span>
+            <h2 className="font-display text-lg md:text-xl font-bold leading-snug !text-white">
               {doctorReview 
                 ? `Pulmonologist Consultation & Spirometry Review` 
                 : `Finalize Consultation Brief & Questions`}
             </h2>
-            <p className="text-xxs text-white/80 font-light leading-relaxed max-w-xl">
+            <p className="text-xxs text-white/90 font-light leading-relaxed max-w-xl">
               {doctorReview 
                 ? `Attending GP ${doctorReview.reviewedBy} verified consolidation scans. Review next steps and print the approved Consult Brief.`
                 : `Prepare clinical briefs and compile discussion questions to brief your specialist appointment.`}
@@ -257,222 +257,223 @@ export default function DashBoardingPage() {
         </Link>
       </div>
 
-      {/* THREE COLUMN GRID: Desktop (3 Columns) / Tablet (2 Columns) / Mobile (1 Column) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      {/* PRIMARY CAREPATH VISUALIZATION (THREAD PATHWAY) */}
+      <div className="bg-brand-card border border-brand-slate/10 p-6 md:p-8 rounded-3xl shadow-sm relative overflow-hidden">
+        {/* Glow accent */}
+        <div className="absolute top-0 left-0 w-2 h-full bg-brand-lavender" />
+
+        <h2 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase mb-8 flex items-center gap-2">
+          <Compass className="w-4 h-4 text-brand-lavender" />
+          Interactive CarePath Journey
+        </h2>
+
+        {/* Horizontal journey steppers */}
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 pb-6 border-b border-brand-slate/5">
+          {stages.map((stage) => {
+            const isActive = currentActiveStage === stage.num;
+            const isPast = currentActiveStage > stage.num;
+
+            return (
+              <button
+                key={stage.num}
+                onClick={() => setSelectedStage(stage.num)}
+                className={`flex flex-col items-center text-center gap-2 p-2.5 rounded-2xl border transition-all cursor-pointer ${
+                  isActive 
+                    ? 'border-brand-lavender bg-brand-lavender-light/10 text-brand-lavender shadow-xxs' 
+                    : isPast
+                    ? 'border-brand-sage-text/10 bg-brand-sage-bg/10 text-brand-sage-text'
+                    : 'border-brand-slate/5 bg-brand-bg/30 text-brand-slate opacity-75'
+                }`}
+              >
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                  isActive 
+                    ? 'bg-brand-lavender text-white border-brand-lavender' 
+                    : isPast
+                    ? 'bg-brand-sage-text text-white border-brand-sage-text'
+                    : 'bg-brand-card text-brand-slate border-brand-slate/20'
+                }`}>
+                  {stage.num}
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-tight leading-tight line-clamp-2">
+                  {stage.label.split(' ')[0]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Stage details */}
+        <div className="mt-6 flex flex-col sm:flex-row gap-5 items-start justify-between bg-brand-bg/40 p-4 rounded-2xl border border-brand-slate/5 animate-in slide-in-from-top-1 duration-200">
+          <div className="flex-1 min-w-0">
+            <span className="text-[9px] font-bold text-brand-slate uppercase tracking-wider block">INSPECTED STAGE DETAILS</span>
+            <h4 className="font-display font-extrabold text-sm text-brand-plum mt-1">
+              Stage {selectedStage}: {stages[selectedStage - 1].label}
+            </h4>
+            <p className="text-xxs text-brand-slate leading-relaxed font-light mt-1 max-w-md">
+              {selectedStage === 1 && `Verify symptoms logs including dry cough history.`}
+              {selectedStage === 2 && `Analyze uploaded lab reports and chest X-rays.`}
+              {selectedStage === 3 && (latestAnalysis?.specialist_recommendation 
+                ? `AI Analysis: suggested Pulmonology specialist consult routing.`
+                : `Provide files to run AI diagnostic investigations.`)}
+              {selectedStage === 4 && `Configure appointment briefs and question cards.`}
+              {selectedStage === 5 && (doctorReview 
+                ? `Attending Physician GP checked off recommendations and approved referral.`
+                : `Simulate doctor review overrides in the Doctor Bridge portal.`)}
+              {selectedStage === 6 && `Log daily symptom trends to verify treatment response.`}
+            </p>
+          </div>
+          <div className="flex gap-2 self-end sm:self-auto shrink-0">
+            {selectedStage === 5 && (
+              <Link
+                to="/doctor-bridge"
+                className="text-xxs font-bold text-brand-sage-text bg-brand-sage-bg border border-brand-sage-text/10 px-3.5 py-2 rounded-xl"
+              >
+                View Review Details
+              </Link>
+            )}
+            {selectedStage === 3 && (
+              <Link
+                to="/analysis"
+                className="text-xxs font-bold text-white bg-brand-lavender hover:bg-brand-lavender-hover px-3.5 py-2 rounded-xl transition-all shadow-xxs"
+              >
+                View Full Report
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ROW 1: CARE PLAN GOALS & MEDICATION REMINDERS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         
-        {/* COLUMN 1: HEALTH JOURNEY & CARE PLAN */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
-          
-          {/* A. HEALTH JOURNEY */}
-          <div className="bg-brand-card border border-brand-slate/10 p-6 md:p-8 rounded-3xl shadow-sm relative overflow-hidden">
-            <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase mb-6 flex items-center gap-2">
-              <Compass className="w-4 h-4 text-brand-lavender" />
-              Health Journey Tracker
+        {/* Left: Continuous Care Plan Goals (spans 2 columns) */}
+        <div className="lg:col-span-2 bg-brand-card border border-brand-slate/10 p-6 md:p-8 rounded-3xl shadow-sm flex flex-col justify-between gap-5">
+          <div className="flex justify-between items-center border-b border-brand-slate/5 pb-3.5 flex-wrap gap-2">
+            <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase flex items-center gap-2">
+              <CheckSquare className="w-4.5 h-4.5 text-brand-lavender" />
+              Continuous Care Plan Goals
             </h3>
-
-            {/* Stage nodes line (Horizontal/Vertical hybrid layout) */}
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 pb-6 border-b border-brand-slate/5">
-              {stages.map((stage) => {
-                const isActive = currentActiveStage === stage.num;
-                const isPast = currentActiveStage > stage.num;
-
-                return (
-                  <button
-                    key={stage.num}
-                    onClick={() => setSelectedStage(stage.num)}
-                    className={`flex flex-col items-center text-center gap-2 p-2.5 rounded-2xl border transition-all cursor-pointer ${
-                      isActive 
-                        ? 'border-brand-lavender bg-brand-lavender-light/10 text-brand-lavender shadow-xxs' 
-                        : isPast
-                        ? 'border-brand-sage-text/10 bg-brand-sage-bg/10 text-brand-sage-text'
-                        : 'border-brand-slate/5 bg-brand-bg/30 text-brand-slate opacity-75'
-                    }`}
-                  >
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                      isActive 
-                        ? 'bg-brand-lavender text-white border-brand-lavender' 
-                        : isPast
-                        ? 'bg-brand-sage-text text-white border-brand-sage-text'
-                        : 'bg-brand-card text-brand-slate border-brand-slate/20'
-                    }`}>
-                      {stage.num}
-                    </div>
-                    <span className="text-[9px] font-bold uppercase tracking-tight leading-tight line-clamp-2">
-                      {stage.label.split(' ')[0]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Highlighted Stage Info card */}
-            <div className="mt-6 flex flex-col sm:flex-row gap-5 items-start justify-between bg-brand-bg/40 p-4 rounded-2xl border border-brand-slate/5 animate-in slide-in-from-top-1 duration-200">
-              <div className="flex-1 min-w-0">
-                <span className="text-[9px] font-bold text-brand-slate uppercase tracking-wider block">INSPECTED STAGE DETAILS</span>
-                <h4 className="font-display font-extrabold text-sm text-brand-plum mt-1">
-                  Stage {selectedStage}: {stages[selectedStage - 1].label}
-                </h4>
-                <p className="text-xxs text-brand-slate leading-relaxed font-light mt-1 max-w-md">
-                  {selectedStage === 1 && `Verify symptoms logs including dry cough history.`}
-                  {selectedStage === 2 && `Analyze uploaded lab reports and chest X-rays.`}
-                  {selectedStage === 3 && (latestAnalysis?.specialist_recommendation 
-                    ? `AI Analysis: suggested Pulmonology specialist consult routing.`
-                    : `Provide files to run AI diagnostic investigations.`)}
-                  {selectedStage === 4 && `Configure appointment briefs and question cards.`}
-                  {selectedStage === 5 && (doctorReview 
-                    ? `Attending Physician GP checked off recommendations and approved referral.`
-                    : `Simulate doctor review overrides in the Doctor Bridge portal.`)}
-                  {selectedStage === 6 && `Log daily symptom trends to verify treatment response.`}
-                </p>
-              </div>
-              <div className="flex gap-2 self-end sm:self-auto shrink-0">
-                {selectedStage === 5 && (
-                  <Link
-                    to="/doctor-bridge"
-                    className="text-xxs font-bold text-brand-sage-text bg-brand-sage-bg border border-brand-sage-text/10 px-3.5 py-2 rounded-xl"
-                  >
-                    View Review Details
-                  </Link>
-                )}
-                {selectedStage === 3 && (
-                  <Link
-                    to="/analysis"
-                    className="text-xxs font-bold text-white bg-brand-lavender hover:bg-brand-lavender-hover px-3.5 py-2 rounded-xl transition-all shadow-xxs"
-                  >
-                    View Full Report
-                  </Link>
-                )}
-              </div>
-            </div>
+            <span className="text-[10px] font-bold text-brand-sage-text bg-brand-sage-bg px-2.5 py-0.5 rounded-full uppercase">
+              {carePlanPercentage}% Complete
+            </span>
           </div>
 
-          {/* B. CARE PLAN PROGRESS */}
-          <div className="bg-brand-card border border-brand-slate/10 p-6 md:p-8 rounded-3xl shadow-sm flex flex-col gap-5">
-            <div className="flex justify-between items-center border-b border-brand-slate/5 pb-3.5 flex-wrap gap-2">
-              <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase flex items-center gap-2">
-                <CheckSquare className="w-4.5 h-4.5 text-brand-lavender" />
-                Continuous Care Plan Goals
-              </h3>
-              <span className="text-[10px] font-bold text-brand-sage-text bg-brand-sage-bg px-2.5 py-0.5 rounded-full uppercase">
-                {carePlanPercentage}% Complete
-              </span>
-            </div>
+          {/* Percentage Bar */}
+          <div className="w-full bg-brand-bg rounded-full h-2 overflow-hidden border border-brand-slate/5">
+            <div 
+              className="bg-brand-sage-text h-full rounded-full transition-all duration-500" 
+              style={{ width: `${carePlanPercentage}%` }}
+            />
+          </div>
 
-            {/* Percentage Bar */}
-            <div className="w-full bg-brand-bg rounded-full h-2 overflow-hidden border border-brand-slate/5">
+          {/* Checklists */}
+          <div className="flex flex-col gap-3 mt-1.5 flex-1 justify-center">
+            {carePlanTasks.map((task) => (
               <div 
-                className="bg-brand-sage-text h-full rounded-full transition-all duration-500" 
-                style={{ width: `${carePlanPercentage}%` }}
-              />
-            </div>
-
-            {/* Checklists */}
-            <div className="flex flex-col gap-3 mt-1.5">
-              {carePlanTasks.map((task) => (
-                <div 
-                  key={task.id} 
-                  className={`flex items-center justify-between gap-3 text-xxs p-2.5 rounded-xl border transition-all ${
-                    task.done 
-                      ? 'bg-brand-sage-bg/5 border-brand-sage-text/15 text-brand-sage-text' 
-                      : 'bg-brand-bg/50 border-brand-slate/5 text-brand-slate'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className={`w-4 h-4 shrink-0 ${task.done ? 'text-brand-sage-text' : 'text-brand-slate/20'}`} />
-                    <span className={task.done ? 'line-through font-light' : 'font-semibold text-brand-plum'}>{task.text}</span>
-                  </div>
-                  {task.done ? (
-                    <span className="text-[8px] font-bold uppercase tracking-wider text-brand-sage-text/80">Done</span>
-                  ) : (
-                    <span className="text-[8px] font-bold uppercase tracking-wider text-brand-slate/60">Pending</span>
-                  )}
+                key={task.id} 
+                className={`flex items-center justify-between gap-3 text-xxs p-2.5 rounded-xl border transition-all ${
+                  task.done 
+                    ? 'bg-brand-sage-bg/5 border-brand-sage-text/15 text-brand-sage-text' 
+                    : 'bg-brand-bg/50 border-brand-slate/5 text-brand-slate'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className={`w-4 h-4 shrink-0 ${task.done ? 'text-brand-sage-text' : 'text-brand-slate/20'}`} />
+                  <span className={task.done ? 'line-through font-light' : 'font-semibold text-brand-plum'}>{task.text}</span>
                 </div>
-              ))}
-            </div>
+                {task.done ? (
+                  <span className="text-[8px] font-bold uppercase tracking-wider text-brand-sage-text/80">Done</span>
+                ) : (
+                  <span className="text-[8px] font-bold uppercase tracking-wider text-brand-slate/60">Pending</span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* COLUMN 2: MEDICATION COMPANION & DAILY FOLLOW-UP */}
-        <div className="flex flex-col gap-6">
-          
-          {/* A. TODAY'S MEDICATION COMPANION */}
-          <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
-            <div className="flex justify-between items-center border-b border-brand-slate/5 pb-3">
-              <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase flex items-center gap-2">
-                <Pill className="w-4 h-4 text-brand-lavender" />
-                Medication Reminders
-              </h3>
-              <Link 
-                to="/medications"
-                className="text-xxs font-bold text-brand-lavender hover:underline flex items-center gap-0.5"
-              >
-                Go to Companion
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            {/* Empty States check */}
-            {medications.length === 0 ? (
-              <div className="py-8 text-center flex flex-col items-center justify-center gap-3">
-                <Inbox className="w-8 h-8 text-brand-slate/20" />
-                <p className="text-xxs text-brand-slate font-light leading-relaxed max-w-xs">
-                  No active medication logged in system. Register a course in Medications Companion.
-                </p>
-                <Link
-                  to="/medications"
-                  className="text-xxs font-semibold bg-brand-lavender text-white px-3 py-1.5 rounded-lg shadow-xxs"
-                >
-                  Configure Medications
-                </Link>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3 mt-1">
-                {medications.slice(0, 3).map((med) => {
-                  return (
-                    <div key={med.id} className="border border-brand-slate/10 rounded-2xl p-4 flex flex-col gap-2.5 bg-brand-bg/25">
-                      <div className="flex justify-between items-start gap-2">
-                        <div>
-                          <span className="text-[10px] font-bold text-brand-plum block leading-tight">{med.name}</span>
-                          <span className="text-[9px] text-brand-slate font-light">{med.dosage} &bull; {med.frequency}</span>
-                        </div>
-                        <span className="text-[8px] font-extrabold uppercase tracking-wider bg-brand-lavender-light text-brand-lavender border border-brand-lavender/10 px-1.5 py-0.5 rounded">
-                          {med.timing}
-                        </span>
-                      </div>
-
-                      {/* Log take check-off buttons */}
-                      <div className="flex items-center justify-between gap-3 mt-1.5 border-t border-brand-slate/5 pt-2.5">
-                        <span className="text-[9px] text-brand-slate/75 font-light">Next Dose: {med.nextDose}</span>
-                        {med.status === 'taken' ? (
-                          <span className="text-[9px] font-bold text-brand-sage-text bg-brand-sage-bg border border-brand-sage-text/10 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            Taken
-                          </span>
-                        ) : med.status === 'missed' ? (
-                          <button
-                            onClick={() => handleMedicationCheckOff(med.id)}
-                            className="text-[9px] font-bold text-brand-rose-text bg-brand-rose-bg border border-brand-rose-text/10 px-2.5 py-1 rounded-lg hover:border-brand-lavender hover:bg-brand-lavender-light/10 transition-all cursor-pointer"
-                          >
-                            Missed (Log taken)
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleMedicationCheckOff(med.id)}
-                            className="text-[9px] font-bold text-brand-plum bg-brand-card border border-brand-slate/15 px-2.5 py-1 rounded-lg hover:border-brand-lavender hover:bg-brand-lavender-light/10 transition-all cursor-pointer"
-                          >
-                            Log Taken
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+        {/* Right: Medication Reminders (spans 1 column, h-full/flex-1 to align bottom edge) */}
+        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col justify-between gap-4 h-full">
+          <div className="flex justify-between items-center border-b border-brand-slate/5 pb-3">
+            <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase flex items-center gap-2">
+              <Pill className="w-4 h-4 text-brand-lavender" />
+              Medication Reminders
+            </h3>
+            <Link 
+              to="/medications"
+              className="text-xxs font-bold text-brand-lavender hover:underline flex items-center gap-0.5"
+            >
+              Go to Companion
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          {/* B. DAILY FOLLOW-UP CHECK-IN */}
-          <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
+          {/* Empty States check */}
+          {medications.length === 0 ? (
+            <div className="py-8 text-center flex flex-col items-center justify-center gap-3 flex-1">
+              <Inbox className="w-8 h-8 text-brand-slate/20" />
+              <p className="text-xxs text-brand-slate font-light leading-relaxed max-w-xs">
+                No active medication logged in system. Register a course in Medications Companion.
+              </p>
+              <Link
+                to="/medications"
+                className="text-xxs font-semibold bg-brand-lavender text-white px-3 py-1.5 rounded-lg shadow-xxs"
+              >
+                Configure Medications
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 mt-1 flex-1 justify-center">
+              {medications.slice(0, 3).map((med) => {
+                return (
+                  <div key={med.id} className="border border-brand-slate/10 rounded-2xl p-4 flex flex-col justify-between gap-2.5 bg-brand-bg/25">
+                    <div className="flex justify-between items-start gap-2">
+                      <div>
+                        <span className="text-[10px] font-bold text-brand-plum block leading-tight">{med.name}</span>
+                        <span className="text-[9px] text-brand-slate font-light">{med.dosage} &bull; {med.frequency}</span>
+                      </div>
+                      <span className="text-[8px] font-extrabold uppercase tracking-wider bg-brand-lavender-light text-brand-lavender border border-brand-lavender/10 px-1.5 py-0.5 rounded">
+                        {med.timing}
+                      </span>
+                    </div>
+
+                    {/* Log take check-off buttons */}
+                    <div className="flex items-center justify-between gap-3 mt-1.5 border-t border-brand-slate/5 pt-2.5">
+                      <span className="text-[9px] text-brand-slate/75 font-light">Next Dose: {med.nextDose}</span>
+                      {med.status === 'taken' ? (
+                        <span className="text-[9px] font-bold text-brand-sage-text bg-brand-sage-bg border border-brand-sage-text/10 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Taken
+                        </span>
+                      ) : med.status === 'missed' ? (
+                        <button
+                          onClick={() => handleMedicationCheckOff(med.id)}
+                          className="text-[9px] font-bold text-brand-rose-text bg-brand-rose-bg border border-brand-rose-text/10 px-2.5 py-1 rounded-lg hover:border-brand-lavender hover:bg-brand-lavender-light/10 transition-all cursor-pointer"
+                        >
+                          Missed (Log taken)
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleMedicationCheckOff(med.id)}
+                          className="text-[9px] font-bold text-brand-plum bg-brand-card border border-brand-slate/15 px-2.5 py-1 rounded-lg hover:border-brand-lavender hover:bg-brand-lavender-light/10 transition-all cursor-pointer"
+                        >
+                          Log Taken
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ROW 2: SYMPTOM CHECK-IN, LATEST MILESTONE, RECENT ACTIONS LOG */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        
+        {/* Box 1: Symptom Follow-up Check-in */}
+        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col justify-between gap-4 h-full">
+          <div className="flex flex-col gap-4">
             <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase border-b border-brand-slate/5 pb-3 flex items-center gap-2">
               <Activity className="w-4 h-4 text-brand-lavender" />
               Symptom Follow-up Check-in
@@ -518,18 +519,16 @@ export default function DashBoardingPage() {
               </div>
               {feelingLogged && (
                 <span className="text-[9px] text-brand-sage-text font-bold uppercase animate-pulse mt-0.5">
-                  Check-in Logged Successfully!
+                  Check-in Logged!
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* COLUMN 3: TIMELINE PREVIEW & RECENT ACTIVITY */}
-        <div className="flex flex-col gap-6 md:col-span-2 lg:col-span-1">
-          
-          {/* A. TIMELINE PREVIEW */}
-          <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
+        {/* Box 2: Latest Milestone */}
+        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col justify-between gap-4 h-full">
+          <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-brand-slate/5 pb-3">
               <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase flex items-center gap-2">
                 <Clock className="w-4 h-4 text-brand-lavender" />
@@ -564,9 +563,11 @@ export default function DashBoardingPage() {
               </div>
             )}
           </div>
+        </div>
 
-          {/* B. RECENT ACTIVITY ACTIONS */}
-          <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
+        {/* Box 3: Recent Actions Log */}
+        <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col justify-between gap-4 h-full">
+          <div className="flex flex-col gap-4">
             <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase border-b border-brand-slate/5 pb-3 flex items-center gap-2">
               <Sparkles className="w-4.5 h-4.5 text-brand-lavender" />
               Recent Actions Log
@@ -604,7 +605,6 @@ export default function DashBoardingPage() {
             </div>
           </div>
         </div>
-
       </div>
 
     </div>

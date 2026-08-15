@@ -10,7 +10,9 @@ import {
   FileCheck,
   TrendingUp,
   ShieldAlert,
-  ChevronRight
+  ChevronRight,
+  Loader2,
+  FileText
 } from 'lucide-react';
 import type { FollowUp } from '../types';
 
@@ -87,20 +89,32 @@ export default function FollowUpPage() {
 
     try {
       if (patient.id === 'demo_patient_id') {
-        const newLog: FollowUp = {
-          id: String(followups.length + 1),
-          created_at: new Date().toISOString(),
-          ...payload
+        const mockNew: FollowUp = {
+          id: Date.now().toString(),
+          patient_id: 'demo_patient_id',
+          check_in_date: new Date().toISOString(),
+          status: 'completed',
+          symptoms_logged: symptomsLogged,
+          notes: notes,
+          created_at: new Date().toISOString()
         };
-        setFollowups(prev => [newLog, ...prev]);
+        setFollowups(prev => [mockNew, ...prev]);
+        setSuccessMsg('Check-in logged successfully! (Demo Mode)');
+        setSymptomsLogged('');
+        setNotes('');
+        
+        // Dispatch dashboard sync event
+        window.dispatchEvent(new Event('timeline_updated'));
       } else {
         await followupService.createFollowUp(payload);
+        setSuccessMsg('Check-in logged successfully!');
+        setSymptomsLogged('');
+        setNotes('');
         await fetchFollowups();
+        
+        // Dispatch dashboard sync event
+        window.dispatchEvent(new Event('timeline_updated'));
       }
-      setSymptomsLogged('');
-      setNotes('');
-      setSuccessMsg('Check-in logged successfully.');
-      setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
       console.error(err);
       alert(err.message || 'Failed to submit follow-up check-in.');
@@ -218,8 +232,13 @@ export default function FollowUpPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-brand-lavender hover:bg-brand-lavender-hover text-white text-xs font-semibold py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center cursor-pointer"
+              className="bg-brand-lavender hover:bg-brand-lavender-hover text-white text-xs font-semibold py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
             >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4" />
+              )}
               Submit Check-in
             </button>
           </form>
@@ -260,18 +279,24 @@ export default function FollowUpPage() {
                     </span>
                   </div>
 
-                  <div className="flex flex-col gap-2 pl-1">
+                  <div className="flex flex-col gap-3 pl-1">
                     <div>
-                      <span className="text-xxs font-bold text-brand-slate uppercase block">Symptoms Status</span>
-                      <p className="text-xs text-brand-plum leading-relaxed font-light mt-0.5">
+                      <span className="text-xxs font-bold text-brand-slate uppercase flex items-center gap-1.5">
+                        <Activity className="w-3.5 h-3.5 text-brand-lavender shrink-0" />
+                        Symptoms Status
+                      </span>
+                      <p className="text-xs text-brand-plum leading-relaxed font-light mt-1 pl-5">
                         {log.symptoms_logged}
                       </p>
                     </div>
 
                     {log.notes && (
                       <div>
-                        <span className="text-xxs font-bold text-brand-slate uppercase block">Additional Notes</span>
-                        <p className="text-xs text-brand-slate leading-relaxed font-light mt-0.5 italic">
+                        <span className="text-xxs font-bold text-brand-slate uppercase flex items-center gap-1.5">
+                          <FileText className="w-3.5 h-3.5 text-brand-lavender shrink-0" />
+                          Additional Notes
+                        </span>
+                        <p className="text-xs text-brand-slate leading-relaxed font-light mt-1 pl-5 italic">
                           {log.notes}
                         </p>
                       </div>
