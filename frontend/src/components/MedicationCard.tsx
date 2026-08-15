@@ -15,10 +15,12 @@ export interface Medication {
 }
 
 interface MedicationCardProps {
+  key?: React.Key;
   medication: Medication;
   onMarkAsTaken?: (id: string) => void;
   showDetails?: boolean;
 }
+
 
 export default function MedicationCard({ 
   medication, 

@@ -1,9 +1,30 @@
 import hashlib
 import hmac
 import os
+import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from src.config import settings
+
+
+class PHIRedactor:
+    """Utility class to sanitize and redact Protected Health Information (PHI)."""
+
+    SSN_PATTERN = re.compile(r'\b\d{3}-\d{2}-\d{4}\b')
+    PHONE_PATTERN = re.compile(r'\b\d{3}-\d{3}-\d{4}\b')
+    EMAIL_PATTERN = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
+    MRN_PATTERN = re.compile(r'\bMRN\d{8}\b')
+
+    @classmethod
+    def redact(cls, text: str) -> str:
+        if not text:
+            return ""
+        text = cls.SSN_PATTERN.sub('[REDACTED_SSN]', text)
+        text = cls.PHONE_PATTERN.sub('[REDACTED_PHONE]', text)
+        text = cls.EMAIL_PATTERN.sub('[REDACTED_EMAIL]', text)
+        text = cls.MRN_PATTERN.sub('[REDACTED_MRN]', text)
+        return text
+
 
 # Salt for PBKDF2 password hashing
 SECRET_SALT = b"carepath_security_salt_2026"

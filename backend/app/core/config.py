@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     # Core Settings
     APP_ENV: str = "development"
+    ENVIRONMENT: str = "development"
     DEBUG: bool = True
     PROJECT_NAME: str = "CarePath AI Backend"
     API_V1_STR: str = "/api/v1"
@@ -30,7 +31,9 @@ class Settings(BaseSettings):
     # Network & Server
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "*"]
+    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "*"]
+
 
     # Database Settings
     POSTGRES_USER: str = "carepath_admin"
@@ -47,7 +50,7 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 10
     ALLOWED_UPLOAD_EXTENSIONS: List[str] = [".pdf", ".jpg", ".jpeg", ".png", ".txt"]
 
-    @field_validator("CORS_ORIGINS", mode="before")
+    @field_validator("CORS_ORIGINS", "BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
         if isinstance(v, str) and not v.startswith("["):

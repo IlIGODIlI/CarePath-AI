@@ -2,13 +2,14 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from supabase import create_client, Client
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 # Base class for SQLAlchemy models
 Base = declarative_base()
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file (auto-searches parent directories)
+load_dotenv(find_dotenv(usecwd=True))
+
 
 # --- PostgreSQL Connection (via SQLAlchemy) ---
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -18,6 +19,9 @@ if DATABASE_URL:
     # SQLAlchemy 1.4+ requires postgresql://
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    if "+asyncpg" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace("+asyncpg", "", 1)
+
         
     engine = create_engine(DATABASE_URL)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -77,3 +77,6 @@ export interface BlueprintTopic {
   diagramAscii?: string;
   keyDecisions: string[];
 }
+
+export * from './types/index';
+
