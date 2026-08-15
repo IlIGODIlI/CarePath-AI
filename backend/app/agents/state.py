@@ -1,140 +1,170 @@
-"""
-CarePath AI - Global Shared Graph State Definition
-=================================================
-Defines the `CarePathGlobalState` TypedDict used by LangGraph to pass immutable
-state snapshots across all 11 autonomous agents.
-
-Includes custom reducers for append-only audit histories, state deltas, and emergency flags.
-"""
-
-from typing import Annotated, Any, Dict, List, Optional, TypedDict
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, TypedDict
 from pydantic import BaseModel, Field
 
 
-# --- Pydantic Sub-Models for Structured Agent Outputs ---
-
-class StructuredSymptom(BaseModel):
-    chief_complaint: str
-    symptom_list: List[str] = Field(default_factory=list)
-    duration: Optional[str] = None
-    severity_score: int = Field(default=5, ge=1, le=10)
-    aggravating_factors: List[str] = Field(default_factory=list)
-    relieving_factors: List[str] = Field(default_factory=list)
-    body_locations: List[str] = Field(default_factory=list)
+class UrgencyCategory(str, Enum):
+    EMERGENCY = "EMERGENCY"      # Immediate short-circuit to ER
+    URGENT = "URGENT"            # Care needed within 24-48 hours
+    ROUTINE = "ROUTINE"          # Scheduled specialist appointment
+    SELF_CARE = "SELF_CARE"      # Non-urgent home monitoring / symptom tracking
 
 
-class VisionFinding(BaseModel):
-    anatomical_region: str
-    visual_observations: List[str]
-    lesion_type: Optional[str] = None
-    image_quality_score: float = Field(default=1.0, ge=0.0, le=1.0)
-    flagged_for_review: bool = False
+class AlertSeverity(str, Enum):
+    CRITICAL = "CRITICAL"
+    WARNING = "WARNING"
+    INFO = "INFO"
 
 
-class ParsedMedicalDoc(BaseModel):
-    document_type: str  # LAB_REPORT, PRESCRIPTION, DISCHARGE_SUMMARY
-    lab_results: Dict[str, Any] = Field(default_factory=dict)
-    abnormal_flags: List[str] = Field(default_factory=list)
-    icd10_codes: List[str] = Field(default_factory=list)
-    prescriptions: List[Dict[str, str]] = Field(default_factory=list)
+class AttachmentType(str, Enum):
+    IMAGE = "IMAGE"
+    DOCUMENT = "DOCUMENT"
 
 
-class ClinicalTimelineEvent(BaseModel):
-    event_date: Optional[str] = None
-    category: str  # SYMPTOM_ONSET, LAB_TEST, SURGERY, MEDICATION
-    title: str
-    details: str
+class AgentAlert(BaseModel):
+    alert_id: str
+    agent_name: str
+    severity: AlertSeverity
+    code: str
+    message: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
-class RetrievedEvidence(BaseModel):
+class AttachmentArtifact(BaseModel):
+    attachment_id: str
+    file_type: AttachmentType
+    file_path: str
+    mime_type: str
+    processed: bool = False
+    processing_error: Optional[str] = None
+
+
+class VisionResultItem(BaseModel):
+    attachment_id: str
+    visual_findings: List[str]
+    detected_features: List[str]
+    confidence: float
+    raw_response: Dict[str, Any] = Field(default_factory=dict)
+
+
+class DocOCRResultItem(BaseModel):
+    attachment_id: str
+    document_type: str  # e.g., "Lab Report", "Prescription", "Discharge Summary"
+    extracted_text: str
+    structured_data: Dict[str, Any] = Field(default_factory=dict) # e.g., {"WBC": "14.2", "Hb": "12.0"}
+    confidence: float
+
+
+class TimelineEvent(BaseModel):
+    event_id: str
+    timestamp_description: str # e.g., "3 days ago", "Onset 2026-08-10"
+    event_type: str # "SYMPTOM", "MEDICATION", "PROCEDURE", "LAB_TEST"
+    description: str
+    source_agent: str
+
+
+class EvidenceItem(BaseModel):
+    evidence_id: str
     source_title: str
-    guideline_body: str
+    guideline_reference: str
+    content_snippet: str
     relevance_score: float
-    citation: str
-    specialty_match: str
+    recommended_specialty: str
+    urgency_hint: UrgencyCategory
 
 
-class DifferentialSpecialty(BaseModel):
-    specialty_name: str
-    confidence_score: float = Field(ge=0.0, le=1.0)
-    clinical_rationale: str
-    supporting_evidence_ids: List[str] = Field(default_factory=list)
+class ClinicalHypothesis(BaseModel):
+    hypothesis_id: str
+    condition_name: str
+    rationale: str
+    likelihood_score: float # 0.0 - 1.0
+    key_supporting_factors: List[str]
+    key_opposing_factors: List[str] = Field(default_factory=list)
 
 
 class SpecialistReferral(BaseModel):
     primary_specialty: str
     secondary_specialty: Optional[str] = None
-    triage_urgency: str  # EMERGENCY_911, URGENT_48HRS, SPECIALIST_EVALUATION, ROUTINE
-    doctor_questions: List[str] = Field(default_factory=list)
-    recommended_timeframe: str
+    urgency: UrgencyCategory
+    clinical_rationale: str
+    suggested_timeframe: str # e.g. "Immediate (ER)", "Within 24 Hours", "Within 1-2 Weeks"
+    preparation_instructions: List[str] # e.g., "Bring prior CBC report", "Fasting blood test required"
 
 
-class PatientCarePlan(BaseModel):
+class CarePlan(BaseModel):
     action_items: List[str]
-    symptom_tracking_guide: List[str]
-    preparation_checklist: List[str]
-    plain_language_summary: str
+    questions_for_doctor: List[str]
+    red_flag_warning_signs: List[str]
+    home_care_guidance: Optional[str] = None
 
 
-class ExecutionStepLog(BaseModel):
-    step_number: int
-    agent_id: str
+class FollowUpSchedule(BaseModel):
+    recommended_check_in_hours: int
+    check_in_trigger: str # e.g., "Assess if fever persists above 101F"
+    monitoring_instructions: List[str]
+
+
+class AgentExecutionLog(BaseModel):
+    step_id: str
     agent_name: str
-    status: str  # SUCCESS, FAILED, EMERGENCY_TRIGGERED, SKIPPED
-    decision: str
-    execution_time_ms: float
-    confidence_score: float
-    timestamp_iso: str
+    started_at: datetime
+    completed_at: datetime
+    status: str # "SUCCESS", "FAILED", "SKIPPED", "INTERRUPTED"
+    state_delta_keys: List[str]
+    error_message: Optional[str] = None
 
 
-# --- Custom Reducer Functions for LangGraph State ---
-
-def append_logs(existing: List[Dict[str, Any]], new_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Reducer that appends execution logs immutably."""
-    return existing + new_items
-
-
-def append_alerts(existing: List[str], new_items: List[str]) -> List[str]:
-    """Reducer that appends emergency alert strings."""
-    return list(set(existing + new_items))
-
-
-# --- LangGraph Shared State Schema ---
-
-class CarePathGlobalState(TypedDict):
+class CarePathState(TypedDict):
     """
-    CarePathGlobalState represents the single source of truth across the entire
-    11-agent LangGraph execution graph.
+    Central Shared Graph State for CarePath AI Multi-Agent Architecture.
+    
+    This immutable TypedDict represents the complete snapshot of the patient's
+    navigation journey across all agent transitions.
     """
-    # Session & Patient Metadata
-    session_id: str
+    # 1. Encounter Identity & Context
+    encounter_id: str
     patient_id: str
-    created_at_iso: str
-
-    # User Input Artifacts
-    raw_prompt: str
-    uploaded_image_urls: List[str]
-    uploaded_doc_urls: List[str]
-
-    # Agent Output Artifacts (Populated dynamically)
-    structured_symptoms: Optional[StructuredSymptom]
-    vision_findings: Optional[VisionFinding]
-    parsed_docs: Optional[ParsedMedicalDoc]
-    clinical_timeline: List[ClinicalTimelineEvent]
-    retrieved_evidence: List[RetrievedEvidence]
-    differential_specialties: List[DifferentialSpecialty]
-    referral_recommendation: Optional[SpecialistReferral]
-    care_plan: Optional[PatientCarePlan]
-    followup_scheduled: Optional[Dict[str, Any]]
-
-    # Workflow Controls & Safety Overrides
+    started_at: datetime
+    
+    # 2. Patient Inputs & Raw Data
+    chief_complaint: str
+    symptoms_duration: Optional[str]
+    symptoms_severity: Optional[int] # 1 to 10 scale
+    attachments: List[AttachmentArtifact]
+    
+    # 3. Perception Agent Outputs
+    structured_symptoms: List[str]
+    demographics: Dict[str, Any]
+    vision_results: List[VisionResultItem]
+    ocr_results: List[DocOCRResultItem]
+    
+    # 4. Patient Chronology & Synthesis
+    patient_timeline: List[TimelineEvent]
+    
+    # 5. RAG & Evidence Retrieval
+    retrieved_evidence: List[EvidenceItem]
+    
+    # 6. Clinical Reasoning & Triage
+    clinical_hypotheses: List[ClinicalHypothesis]
+    confidence_score: float # Aggregate confidence [0.0 - 1.0]
+    urgency_level: UrgencyCategory
     is_emergency: bool
-    emergency_alerts: Annotated[List[str], append_alerts]
-    missing_information: List[str]
-    workflow_completed: bool
-    current_agent_id: str
-    overall_confidence: float
-
-    # Audit Trail & Execution Memory
-    execution_history: Annotated[List[Dict[str, Any]], append_logs]
-    retry_counts: Dict[str, int]
+    emergency_reasoning: Optional[str]
+    
+    # 7. Human-in-the-Loop & Information Gaps
+    needs_more_info: bool
+    missing_info_queries: List[str]
+    human_approved: bool
+    human_feedback: Optional[str]
+    
+    # 8. Navigation & Action Deliverables
+    referral: Optional[SpecialistReferral]
+    care_plan: Optional[CarePlan]
+    follow_up: Optional[FollowUpSchedule]
+    
+    # 9. System Diagnostics & Observability
+    alerts: List[AgentAlert]
+    execution_history: List[AgentExecutionLog]
+    next_agent: str
+    error_state: Optional[str]

@@ -1,33 +1,7 @@
-# Environments
 .env
-.env*
-!.env.example
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Byte-compiled / optimized / DLL files
+backend/.env
 __pycache__/
-*.py[cod]
-*$py.class
-
-# IDEs and Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Node dependencies and build
+*.pyc
+.pytest_cache/
 node_modules/
-build/
 dist/
-coverage/
-*.log
-

@@ -1,0 +1,612 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { usePatient } from '../context/PatientContext';
+import { useAuth } from '../context/AuthContext';
+import { timelineService } from '../services/timelineService';
+import { analysisService } from '../services/analysisService';
+import { medicationService } from '../services/medicationService';
+import { doctorBridgeService } from '../services/doctorBridgeService';
+import { 
+  Activity, 
+  Calendar, 
+  Clock, 
+  CheckCircle2, 
+  CheckSquare,
+  ArrowRight,
+  Sparkles,
+  Pill,
+  Stethoscope,
+  Compass,
+  FileText,
+  AlertCircle,
+  TrendingUp,
+  PlusCircle,
+  Smile,
+  ShieldCheck,
+  ChevronRight,
+  TrendingDown,
+  Inbox
+} from 'lucide-react';
+import type { TimelineEvent, AnalysisResult } from '../types';
+
+export default function DashBoardingPage() {
+  const { patient, isLoading: isPatientLoading, fetchPatient } = usePatient();
+  const { user } = useAuth();
+  
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
+  const [latestAnalysis, setLatestAnalysis] = useState<AnalysisResult | null>(null);
+  const [doctorReview, setDoctorReview] = useState<any>(null);
+  const [medications, setMedications] = useState<any[]>([]);
+  const [adherencePercentage, setAdherencePercentage] = useState(0);
+
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  
+  // Interactive Follow-up State
+  const [feelingLogged, setFeelingLogged] = useState<string | null>(null);
+  const [symptomTrend, setSymptomTrend] = useState<'Improving' | 'Stable' | 'Declining'>('Stable');
+  const [lastCheckIn, setLastCheckIn] = useState<string>('Yesterday, 6:30 PM');
+
+  // Journey stage selection state
+  const [selectedStage, setSelectedStage] = useState<number>(3);
+
+  const loadLocalStates = () => {
+    setMedications(medicationService.getMedications());
+    setAdherencePercentage(medicationService.getAdherenceSummary().percentage);
+    setDoctorReview(doctorBridgeService.getReview());
+
+    const savedTrend = localStorage.getItem('carepath_symptom_trend');
+    if (savedTrend) {
+      setSymptomTrend(savedTrend as any);
+    }
+    const savedCheckIn = localStorage.getItem('carepath_last_check_in');
+    if (savedCheckIn) {
+      setLastCheckIn(savedCheckIn);
+    }
+  };
+
+  const loadDashboardData = async () => {
+    if (!patient) return;
+    setIsLoadingData(true);
+    setIsOffline(false);
+    try {
+      if (patient.id === 'demo_patient_id') {
+        const timelineData = await timelineService.getTimeline('demo_patient_id');
+        setTimeline(timelineData.slice(0, 3));
+
+        // Mock Analysis
+        setLatestAnalysis({
+          id: 'demo_analysis_1',
+          patient_id: 'demo_patient_id',
+          status: 'completed',
+          specialist_recommendation: 'Pulmonologist / Respirologist',
+          explanation: 'Exertional shortness of breath with hyperinflation signs indicates assessment for airway hyperreactivity or occupational exposures.',
+          considered_factors: [
+            'Persistent dry cough (3 days)',
+            'Right lower lobe consolidation on scan',
+            'Flat recovery trend with Albuterol'
+          ],
+          created_at: new Date(Date.now() - 86400000).toISOString()
+        });
+      } else {
+        const [timelineData, analysisHistory] = await Promise.all([
+          timelineService.getTimeline(patient.id),
+          analysisService.getAnalysisHistory(patient.id)
+        ]);
+        setTimeline(timelineData.slice(0, 4));
+        setLatestAnalysis(analysisHistory.length > 0 ? analysisHistory[0] : null);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setIsOffline(true);
+      
+      // Load fallback local demo states in offline mode
+      setLatestAnalysis({
+        id: 'demo_analysis_offline',
+        patient_id: 'demo_patient',
+        status: 'completed',
+        specialist_recommendation: 'Pulmonologist / Respirologist',
+        explanation: 'Exertional shortness of breath with hyperinflation signs indicates assessment for airway hyperreactivity or occupational exposures.',
+        considered_factors: [
+          'Persistent dry cough (3 days)',
+          'Right lower lobe consolidation on scan',
+          'Flat recovery trend with Albuterol'
+        ],
+        created_at: new Date().toISOString()
+      });
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    loadLocalStates();
+    loadDashboardData();
+
+    // Listen to updates from other pages
+    window.addEventListener('medication_updated', loadLocalStates);
+    window.addEventListener('timeline_updated', loadDashboardData);
+    window.addEventListener('doctor_review_updated', () => {
+      loadLocalStates();
+      // Auto advance to stage 5 (Doctor Approved) when review exists
+      setSelectedStage(5);
+    });
+    return () => {
+      window.removeEventListener('medication_updated', loadLocalStates);
+      window.removeEventListener('timeline_updated', loadDashboardData);
+      window.removeEventListener('doctor_review_updated', loadLocalStates);
+    };
+  }, [patient]);
+
+  const handleMedicationCheckOff = (medId: string) => {
+    medicationService.markAsTaken(medId);
+    loadLocalStates();
+  };
+
+  const handleSymptomCheckIn = (status: 'Worse' | 'Same' | 'Better') => {
+    let trend: 'Improving' | 'Stable' | 'Declining' = 'Stable';
+    if (status === 'Better') trend = 'Improving';
+    if (status === 'Worse') trend = 'Declining';
+
+    const checkInTime = new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    const checkInDateString = `Today, ${checkInTime}`;
+
+    setSymptomTrend(trend);
+    setLastCheckIn(checkInDateString);
+    setFeelingLogged(status);
+
+    localStorage.setItem('carepath_symptom_trend', trend);
+    localStorage.setItem('carepath_last_check_in', checkInDateString);
+
+    // Push log to timeline
+    const checkInLog = {
+      patient_id: patient?.id || 'demo_patient_id',
+      type: 'symptom' as const,
+      title: `Daily Check-in: Feeling ${status}`,
+      description: `Logged symptom trend is ${trend}.`,
+      timestamp: new Date().toISOString()
+    };
+    
+    if (patient?.id === 'demo_patient_id') {
+      setTimeline(prev => [checkInLog as any, ...prev]);
+    } else {
+      timelineService.addTimelineEvent(checkInLog).then(loadDashboardData);
+    }
+  };
+
+  const patientName = patient?.name || user?.name || 'Jane Doe';
+  const careJourneyDay = patient?.id === 'demo_patient_id' ? '4' : '1';
+
+  // Stepper Stages list
+  const stages = [
+    { num: 1, label: 'Symptoms Logged', desc: 'Initial symptoms recorded' },
+    { num: 2, label: 'Documents Uploaded', desc: 'Medical records uploaded' },
+    { num: 3, label: 'AI Analyzed', desc: 'Machine learning advisory generated' },
+    { num: 4, label: 'Doctor Brief Prepared', desc: 'Sync questions finalized' },
+    { num: 5, label: 'Physician Endorsed', desc: 'Doctor reviewed and signed off' },
+    { num: 6, label: 'Follow-up Due', desc: 'Verify health parameters' }
+  ];
+
+  // Dynamically determine current active stage in the Health Journey
+  const currentActiveStage = doctorReview ? 5 : (latestAnalysis ? 3 : 2);
+
+  // Care Plan Tasks Lists
+  const carePlanTasks = [
+    { id: 't1', text: 'Upload chest X-ray scans', done: true },
+    { id: 't2', text: 'Prepare Doctor Brief details', done: true },
+    { id: 't3', text: 'Attend Pulmonologist consultation', done: !!doctorReview },
+    { id: 't4', text: 'Complete pulmonary spirometry scan', done: false },
+    { id: 't5', text: 'Log day-7 recovery check-in', done: false }
+  ];
+
+  const completedTasksCount = carePlanTasks.filter(t => t.done).length;
+  const carePlanPercentage = Math.round((completedTasksCount / carePlanTasks.length) * 100);
+
+  return (
+    <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+      
+      {/* 1. GREETING & DAY INDICATOR HEADER */}
+      <div className="flex justify-between items-center flex-wrap gap-4 border-b border-brand-slate/10 pb-4">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-extrabold tracking-tight text-brand-plum mb-0.5">
+            Good morning, {patientName}
+          </h1>
+          <p className="text-brand-slate text-xs font-light">
+            Your care journey is <span className="font-bold text-brand-plum">Day {careJourneyDay} Active</span>.
+          </p>
+        </div>
+        {isOffline && (
+          <div className="flex items-center gap-1.5 text-xxs font-bold text-brand-amber-text bg-brand-amber-bg border border-brand-amber-text/10 px-3 py-1.5 rounded-xl">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <span>Offline Preview Mode</span>
+          </div>
+        )}
+      </div>
+
+      {/* 2. NEXT ACTION (Highest Prominence Hero Row) */}
+      <div className="bg-gradient-to-r from-brand-lavender to-brand-plum p-6 md:p-8 rounded-3xl text-white shadow-md relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group hover:shadow-lg transition-all duration-300">
+        {/* Glow visual effects */}
+        <div className="absolute top-0 right-0 w-36 h-36 bg-white/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-xl -ml-6 -mb-6 pointer-events-none" />
+
+        <div className="flex-1 flex gap-4 items-start min-w-0">
+          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0 border border-white/20 mt-1 animate-pulse">
+            <Stethoscope className="w-6 h-6 stroke-[2.2]" />
+          </div>
+          <div className="min-w-0 flex flex-col gap-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-white/70 block">Next Action Priority</span>
+            <h2 className="font-display text-lg md:text-xl font-bold leading-snug">
+              {doctorReview 
+                ? `Pulmonologist Consultation & Spirometry Review` 
+                : `Finalize Consultation Brief & Questions`}
+            </h2>
+            <p className="text-xxs text-white/80 font-light leading-relaxed max-w-xl">
+              {doctorReview 
+                ? `Attending GP ${doctorReview.reviewedBy} verified consolidation scans. Review next steps and print the approved Consult Brief.`
+                : `Prepare clinical briefs and compile discussion questions to brief your specialist appointment.`}
+            </p>
+          </div>
+        </div>
+
+        <Link
+          to="/doctor-bridge"
+          className="bg-white hover:bg-white/95 text-brand-plum text-xs font-bold px-6 py-3.5 rounded-xl transition-all shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer self-start md:self-auto"
+        >
+          {doctorReview ? 'View Doctor Brief' : 'Open Doctor Bridge'}
+          <ArrowRight className="w-4 h-4 text-brand-plum" />
+        </Link>
+      </div>
+
+      {/* THREE COLUMN GRID: Desktop (3 Columns) / Tablet (2 Columns) / Mobile (1 Column) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+        
+        {/* COLUMN 1: HEALTH JOURNEY & CARE PLAN */}
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          
+          {/* A. HEALTH JOURNEY */}
+          <div className="bg-brand-card border border-brand-slate/10 p-6 md:p-8 rounded-3xl shadow-sm relative overflow-hidden">
+            <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase mb-6 flex items-center gap-2">
+              <Compass className="w-4 h-4 text-brand-lavender" />
+              Health Journey Tracker
+            </h3>
+
+            {/* Stage nodes line (Horizontal/Vertical hybrid layout) */}
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 pb-6 border-b border-brand-slate/5">
+              {stages.map((stage) => {
+                const isActive = currentActiveStage === stage.num;
+                const isPast = currentActiveStage > stage.num;
+
+                return (
+                  <button
+                    key={stage.num}
+                    onClick={() => setSelectedStage(stage.num)}
+                    className={`flex flex-col items-center text-center gap-2 p-2.5 rounded-2xl border transition-all cursor-pointer ${
+                      isActive 
+                        ? 'border-brand-lavender bg-brand-lavender-light/10 text-brand-lavender shadow-xxs' 
+                        : isPast
+                        ? 'border-brand-sage-text/10 bg-brand-sage-bg/10 text-brand-sage-text'
+                        : 'border-brand-slate/5 bg-brand-bg/30 text-brand-slate opacity-75'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                      isActive 
+                        ? 'bg-brand-lavender text-white border-brand-lavender' 
+                        : isPast
+                        ? 'bg-brand-sage-text text-white border-brand-sage-text'
+                        : 'bg-brand-card text-brand-slate border-brand-slate/20'
+                    }`}>
+                      {stage.num}
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-tight leading-tight line-clamp-2">
+                      {stage.label.split(' ')[0]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Highlighted Stage Info card */}
+            <div className="mt-6 flex flex-col sm:flex-row gap-5 items-start justify-between bg-brand-bg/40 p-4 rounded-2xl border border-brand-slate/5 animate-in slide-in-from-top-1 duration-200">
+              <div className="flex-1 min-w-0">
+                <span className="text-[9px] font-bold text-brand-slate uppercase tracking-wider block">INSPECTED STAGE DETAILS</span>
+                <h4 className="font-display font-extrabold text-sm text-brand-plum mt-1">
+                  Stage {selectedStage}: {stages[selectedStage - 1].label}
+                </h4>
+                <p className="text-xxs text-brand-slate leading-relaxed font-light mt-1 max-w-md">
+                  {selectedStage === 1 && `Verify symptoms logs including dry cough history.`}
+                  {selectedStage === 2 && `Analyze uploaded lab reports and chest X-rays.`}
+                  {selectedStage === 3 && (latestAnalysis?.specialist_recommendation 
+                    ? `AI Analysis: suggested Pulmonology specialist consult routing.`
+                    : `Provide files to run AI diagnostic investigations.`)}
+                  {selectedStage === 4 && `Configure appointment briefs and question cards.`}
+                  {selectedStage === 5 && (doctorReview 
+                    ? `Attending Physician GP checked off recommendations and approved referral.`
+                    : `Simulate doctor review overrides in the Doctor Bridge portal.`)}
+                  {selectedStage === 6 && `Log daily symptom trends to verify treatment response.`}
+                </p>
+              </div>
+              <div className="flex gap-2 self-end sm:self-auto shrink-0">
+                {selectedStage === 5 && (
+                  <Link
+                    to="/doctor-bridge"
+                    className="text-xxs font-bold text-brand-sage-text bg-brand-sage-bg border border-brand-sage-text/10 px-3.5 py-2 rounded-xl"
+                  >
+                    View Review Details
+                  </Link>
+                )}
+                {selectedStage === 3 && (
+                  <Link
+                    to="/analysis"
+                    className="text-xxs font-bold text-white bg-brand-lavender hover:bg-brand-lavender-hover px-3.5 py-2 rounded-xl transition-all shadow-xxs"
+                  >
+                    View Full Report
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* B. CARE PLAN PROGRESS */}
+          <div className="bg-brand-card border border-brand-slate/10 p-6 md:p-8 rounded-3xl shadow-sm flex flex-col gap-5">
+            <div className="flex justify-between items-center border-b border-brand-slate/5 pb-3.5 flex-wrap gap-2">
+              <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase flex items-center gap-2">
+                <CheckSquare className="w-4.5 h-4.5 text-brand-lavender" />
+                Continuous Care Plan Goals
+              </h3>
+              <span className="text-[10px] font-bold text-brand-sage-text bg-brand-sage-bg px-2.5 py-0.5 rounded-full uppercase">
+                {carePlanPercentage}% Complete
+              </span>
+            </div>
+
+            {/* Percentage Bar */}
+            <div className="w-full bg-brand-bg rounded-full h-2 overflow-hidden border border-brand-slate/5">
+              <div 
+                className="bg-brand-sage-text h-full rounded-full transition-all duration-500" 
+                style={{ width: `${carePlanPercentage}%` }}
+              />
+            </div>
+
+            {/* Checklists */}
+            <div className="flex flex-col gap-3 mt-1.5">
+              {carePlanTasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  className={`flex items-center justify-between gap-3 text-xxs p-2.5 rounded-xl border transition-all ${
+                    task.done 
+                      ? 'bg-brand-sage-bg/5 border-brand-sage-text/15 text-brand-sage-text' 
+                      : 'bg-brand-bg/50 border-brand-slate/5 text-brand-slate'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`w-4 h-4 shrink-0 ${task.done ? 'text-brand-sage-text' : 'text-brand-slate/20'}`} />
+                    <span className={task.done ? 'line-through font-light' : 'font-semibold text-brand-plum'}>{task.text}</span>
+                  </div>
+                  {task.done ? (
+                    <span className="text-[8px] font-bold uppercase tracking-wider text-brand-sage-text/80">Done</span>
+                  ) : (
+                    <span className="text-[8px] font-bold uppercase tracking-wider text-brand-slate/60">Pending</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMN 2: MEDICATION COMPANION & DAILY FOLLOW-UP */}
+        <div className="flex flex-col gap-6">
+          
+          {/* A. TODAY'S MEDICATION COMPANION */}
+          <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
+            <div className="flex justify-between items-center border-b border-brand-slate/5 pb-3">
+              <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase flex items-center gap-2">
+                <Pill className="w-4 h-4 text-brand-lavender" />
+                Medication Reminders
+              </h3>
+              <Link 
+                to="/medications"
+                className="text-xxs font-bold text-brand-lavender hover:underline flex items-center gap-0.5"
+              >
+                Go to Companion
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Empty States check */}
+            {medications.length === 0 ? (
+              <div className="py-8 text-center flex flex-col items-center justify-center gap-3">
+                <Inbox className="w-8 h-8 text-brand-slate/20" />
+                <p className="text-xxs text-brand-slate font-light leading-relaxed max-w-xs">
+                  No active medication logged in system. Register a course in Medications Companion.
+                </p>
+                <Link
+                  to="/medications"
+                  className="text-xxs font-semibold bg-brand-lavender text-white px-3 py-1.5 rounded-lg shadow-xxs"
+                >
+                  Configure Medications
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 mt-1">
+                {medications.slice(0, 3).map((med) => {
+                  return (
+                    <div key={med.id} className="border border-brand-slate/10 rounded-2xl p-4 flex flex-col gap-2.5 bg-brand-bg/25">
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <span className="text-[10px] font-bold text-brand-plum block leading-tight">{med.name}</span>
+                          <span className="text-[9px] text-brand-slate font-light">{med.dosage} &bull; {med.frequency}</span>
+                        </div>
+                        <span className="text-[8px] font-extrabold uppercase tracking-wider bg-brand-lavender-light text-brand-lavender border border-brand-lavender/10 px-1.5 py-0.5 rounded">
+                          {med.timing}
+                        </span>
+                      </div>
+
+                      {/* Log take check-off buttons */}
+                      <div className="flex items-center justify-between gap-3 mt-1.5 border-t border-brand-slate/5 pt-2.5">
+                        <span className="text-[9px] text-brand-slate/75 font-light">Next Dose: {med.nextDose}</span>
+                        {med.status === 'taken' ? (
+                          <span className="text-[9px] font-bold text-brand-sage-text bg-brand-sage-bg border border-brand-sage-text/10 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Taken
+                          </span>
+                        ) : med.status === 'missed' ? (
+                          <button
+                            onClick={() => handleMedicationCheckOff(med.id)}
+                            className="text-[9px] font-bold text-brand-rose-text bg-brand-rose-bg border border-brand-rose-text/10 px-2.5 py-1 rounded-lg hover:border-brand-lavender hover:bg-brand-lavender-light/10 transition-all cursor-pointer"
+                          >
+                            Missed (Log taken)
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleMedicationCheckOff(med.id)}
+                            className="text-[9px] font-bold text-brand-plum bg-brand-card border border-brand-slate/15 px-2.5 py-1 rounded-lg hover:border-brand-lavender hover:bg-brand-lavender-light/10 transition-all cursor-pointer"
+                          >
+                            Log Taken
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* B. DAILY FOLLOW-UP CHECK-IN */}
+          <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
+            <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase border-b border-brand-slate/5 pb-3 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-brand-lavender" />
+              Symptom Follow-up Check-in
+            </h3>
+
+            {/* Follow-up indicators */}
+            <div className="grid grid-cols-2 gap-3 mb-2 text-xxs leading-relaxed font-light">
+              <div className="bg-brand-bg/50 border border-brand-slate/5 p-3 rounded-2xl">
+                <span className="text-[9px] font-bold text-brand-slate uppercase tracking-wider block">Symptom Trend</span>
+                <span className="flex items-center gap-1 mt-1 text-brand-plum font-semibold">
+                  {symptomTrend === 'Improving' && <Smile className="w-3.5 h-3.5 text-brand-sage-text shrink-0" />}
+                  {symptomTrend === 'Stable' && <Smile className="w-3.5 h-3.5 text-brand-slate/40 shrink-0" />}
+                  {symptomTrend === 'Declining' && <Smile className="w-3.5 h-3.5 text-brand-rose-text shrink-0" />}
+                  {symptomTrend}
+                </span>
+              </div>
+              <div className="bg-brand-bg/50 border border-brand-slate/5 p-3 rounded-2xl">
+                <span className="text-[9px] font-bold text-brand-slate uppercase tracking-wider block">Last Check-in</span>
+                <span className="block mt-1 font-semibold text-brand-plum truncate">{lastCheckIn}</span>
+              </div>
+            </div>
+
+            {/* Daily feeling question */}
+            <div className="border border-brand-slate/10 rounded-2xl p-4 bg-brand-bg/30 text-center flex flex-col gap-3">
+              <span className="text-xxs font-bold text-brand-plum leading-snug block">How are you feeling today?</span>
+              
+              <div className="flex gap-2">
+                {[
+                  { state: 'Worse', color: 'bg-brand-rose-bg hover:bg-brand-rose-bg/85 border-brand-rose-text/10 text-brand-rose-text' },
+                  { state: 'Same', color: 'bg-brand-bg hover:bg-brand-bg/80 border-brand-slate/15 text-brand-plum' },
+                  { state: 'Better', color: 'bg-brand-sage-bg hover:bg-brand-sage-bg/85 border-brand-sage-text/10 text-brand-sage-text' }
+                ].map(item => (
+                  <button
+                    key={item.state}
+                    onClick={() => handleSymptomCheckIn(item.state as any)}
+                    className={`flex-1 text-[10px] font-bold py-2 rounded-xl border transition-all cursor-pointer ${item.color} ${
+                      feelingLogged === item.state ? 'ring-2 ring-brand-plum shadow-xxs scale-95' : ''
+                    }`}
+                  >
+                    {item.state}
+                  </button>
+                ))}
+              </div>
+              {feelingLogged && (
+                <span className="text-[9px] text-brand-sage-text font-bold uppercase animate-pulse mt-0.5">
+                  Check-in Logged Successfully!
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMN 3: TIMELINE PREVIEW & RECENT ACTIVITY */}
+        <div className="flex flex-col gap-6 md:col-span-2 lg:col-span-1">
+          
+          {/* A. TIMELINE PREVIEW */}
+          <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
+            <div className="flex justify-between items-center border-b border-brand-slate/5 pb-3">
+              <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase flex items-center gap-2">
+                <Clock className="w-4 h-4 text-brand-lavender" />
+                Latest Milestones
+              </h3>
+              <Link 
+                to="/journey"
+                className="text-xxs font-bold text-brand-lavender hover:underline flex items-center gap-0.5"
+              >
+                View Full Journey
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Empty check */}
+            {timeline.length === 0 ? (
+              <div className="py-8 text-center flex flex-col items-center justify-center gap-3">
+                <Inbox className="w-8 h-8 text-brand-slate/20" />
+                <p className="text-xxs text-brand-slate font-light">No logged milestones found on timeline.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 mt-1">
+                {timeline.slice(0, 3).map((event) => (
+                  <div key={event.id} className="border-l-2 border-brand-slate/15 pl-3.5 py-1.5 flex flex-col gap-0.5">
+                    <span className="text-[8px] font-bold text-brand-slate/50">
+                      {new Date(event.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </span>
+                    <span className="text-xxs font-semibold text-brand-plum leading-tight">{event.title}</span>
+                    <p className="text-[10px] text-brand-slate leading-relaxed font-light line-clamp-1">{event.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* B. RECENT ACTIVITY ACTIONS */}
+          <div className="bg-brand-card border border-brand-slate/10 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
+            <h3 className="font-display text-xs font-bold tracking-wider text-brand-slate uppercase border-b border-brand-slate/5 pb-3 flex items-center gap-2">
+              <Sparkles className="w-4.5 h-4.5 text-brand-lavender" />
+              Recent Actions Log
+            </h3>
+
+            <div className="flex flex-col gap-3 mt-1.5 text-xxs font-light leading-snug">
+              {/* Document upload status */}
+              <div className="flex items-start gap-2.5">
+                <FileText className="w-4 h-4 text-brand-slate/55 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-brand-plum block">Prescription Uploaded</span>
+                  <span className="text-brand-slate">cbc_blood_report.pdf parsed successfully.</span>
+                </div>
+              </div>
+
+              {/* AI analysis */}
+              <div className="flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-brand-lavender shrink-0 mt-0.5 animate-pulse" />
+                <div>
+                  <span className="font-bold text-brand-plum block">AI Analysis Updated</span>
+                  <span className="text-brand-slate">Pulmonology consult advisory generated.</span>
+                </div>
+              </div>
+
+              {/* Doctor feedback review */}
+              {doctorReview && (
+                <div className="flex items-start gap-2.5 animate-in slide-in-from-top-1 duration-200">
+                  <ShieldCheck className="w-4 h-4 text-brand-sage-text shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-brand-plum block">Doctor Feedback Endorsed</span>
+                    <span className="text-brand-slate">Signed off by {doctorReview.reviewedBy}.</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
