@@ -26,6 +26,8 @@ class Settings(BaseSettings):
 
     # ChromaDB
     CHROMA_COLLECTION_NAME: str = "medical_guidelines"
+    EMBEDDING_PROVIDER: str = "local"
+    EMBEDDING_MODEL_NAME: str = "all-MiniLM-L6-v2"
 
     # Per-module confidence thresholds (used by validation helpers)
     NLP_CONFIDENCE_THRESHOLD: float = 0.75
