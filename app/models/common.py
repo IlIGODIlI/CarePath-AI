@@ -289,3 +289,32 @@ class ClinicalInsight(BaseModel):
         ),
         description="Mandatory clinical disclaimer.",
     )
+
+
+class ClinicalTimelineEvent(BaseModel):
+    """Chronological clinical timeline event."""
+
+    model_config = ConfigDict(frozen=True)
+
+    event_date: Optional[str] = Field(
+        default=None,
+        description="ISO date or relative timeframe (e.g. '2026-08-10', 'Day 3').",
+        max_length=64,
+    )
+    category: str = Field(
+        default="GENERAL",
+        description="Event classification (e.g. SYMPTOM_ONSET, LAB_TEST, SURGERY, MEDICATION, GENERAL).",
+        max_length=64,
+    )
+    title: str = Field(
+        ...,
+        description="Short title summarizing the event.",
+        min_length=1,
+        max_length=256,
+    )
+    details: str = Field(
+        default="",
+        description="Detailed description of the clinical event.",
+        max_length=2048,
+    )
+

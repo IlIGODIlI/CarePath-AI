@@ -129,3 +129,92 @@ class ClinicalSynthesisService(BaseAIService):
     ) -> "PatientCarePathSynthesis":
         """Synthesize multimodal patient information."""
         ...
+
+
+class PatientSummaryService(BaseAIService):
+    """Contract for structured patient summary generation."""
+
+    @abstractmethod
+    def generate_summary(
+        self,
+        request: "PatientSummaryRequest",
+    ) -> "PatientSummaryReport":
+        """Generate a validated structured patient summary."""
+        ...
+
+
+class CaseQuestionService(BaseAIService):
+    """Contract for case-specific doctor question generation."""
+
+    @abstractmethod
+    def generate_questions(
+        self,
+        request: "CaseQuestionRequest",
+    ) -> "CaseQuestionsReport":
+        """Generate validated, case-specific questions for a clinician."""
+        ...
+
+
+class ClinicalExtractionService(BaseAIService):
+    """Contract for structured clinical information extraction."""
+
+    @abstractmethod
+    def extract_clinical_info(
+        self,
+        request: "ClinicalExtractionRequest",
+    ) -> "ClinicalExtractionReport":
+        """Extract structured medical entities, facts, and relationships from multi-modal clinical inputs."""
+        ...
+
+
+class DoctorFeedbackService(BaseAIService):
+    """Contract for doctor feedback interpretation and memory candidate structuring."""
+
+    @abstractmethod
+    def interpret_feedback(
+        self,
+        request: "DoctorFeedbackRequest",
+    ) -> "DoctorFeedbackInterpretationReport":
+        """Interpret structured or unstructured clinician feedback into memory-ready clinical objects."""
+        ...
+
+
+class TreatmentResponseService(BaseAIService):
+    """Contract for comparing treatment events against clinical outcomes."""
+
+    @abstractmethod
+    def analyze_treatment_response(
+        self,
+        request: "TreatmentResponseRequest",
+    ) -> "TreatmentResponseReport":
+        """Analyze documented treatment events and evaluate clinical outcome response."""
+        ...
+
+
+class FollowUpIntelligenceService(BaseAIService):
+    """Contract for identifying care-continuity follow-up requirements."""
+
+    @abstractmethod
+    def analyze_follow_up(
+        self,
+        request: "FollowUpIntelligenceRequest",
+    ) -> "FollowUpIntelligenceReport":
+        """Analyze documented history, trends, and instructions to identify follow-up needs."""
+        ...
+
+
+class PersonalizedCarePlanService(BaseAIService):
+    """Contract for generating structured continuity-of-care plans."""
+
+    @abstractmethod
+    def generate_care_plan(
+        self,
+        request: "PersonalizedCarePlanRequest",
+    ) -> "PersonalizedCarePlanReport":
+        """Generate structured continuity care plan grounding doctor orders and patient context."""
+        ...
+
+
+
+
+
