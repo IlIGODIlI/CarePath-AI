@@ -21,15 +21,52 @@ export default function MedicalRecordsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchRecords = async () => {
-    if (!patient) return;
     setIsLoading(true);
     setError(null);
     try {
-      if (patient.id === 'demo_patient_id') {
-        setRecords([
+      let remoteRecords: MedicalRecord[] = [];
+      try {
+        remoteRecords = await apiClient.get<MedicalRecord[]>('/api/v1/records');
+      } catch (e) {
+        console.error("Notice: remote records fetch fallback:", e);
+      }
+
+      // Read uploaded documents from localStorage
+      const storedDocsRaw = localStorage.getItem('carepath_uploaded_docs');
+      const storedDocs = storedDocsRaw ? JSON.parse(storedDocsRaw) : [];
+      
+      const localRecords: MedicalRecord[] = storedDocs.map((doc: any) => {
+        let rtype: RecordType = 'report';
+        const cat = (doc.category || '').toLowerCase();
+        if (cat.includes('prescrip')) rtype = 'prescription';
+        else if (cat.includes('image') || cat.includes('scan')) rtype = 'image';
+
+        return {
+          id: doc.id,
+          patient_id: patient?.id || 'demo_patient_id',
+          title: doc.name,
+          type: rtype,
+          file_url: doc.result?.summary?.source || '#',
+          file_name: doc.name,
+          created_at: doc.uploadedAt ? new Date(doc.uploadedAt).toISOString() : new Date().toISOString(),
+          summary: doc.result?.summary?.keyInfo || `Uploaded ${doc.category} document.`
+        };
+      });
+
+      const combined = [...remoteRecords, ...localRecords];
+      const uniqueMap = new Map<string, MedicalRecord>();
+      combined.forEach(r => {
+        if (!uniqueMap.has(r.file_name)) {
+          uniqueMap.set(r.file_name, r);
+        }
+      });
+
+      let allRecs = Array.from(uniqueMap.values());
+      if (allRecs.length === 0) {
+        allRecs = [
           {
             id: 'rec_1',
-            patient_id: 'demo_patient_id',
+            patient_id: patient?.id || 'demo_patient_id',
             title: 'Chest X-Ray Posterior-Anterior',
             type: 'image',
             file_url: '#',
@@ -39,7 +76,7 @@ export default function MedicalRecordsPage() {
           },
           {
             id: 'rec_2',
-            patient_id: 'demo_patient_id',
+            patient_id: patient?.id || 'demo_patient_id',
             title: 'Complete Blood Count (CBC) Panel',
             type: 'report',
             file_url: '#',
@@ -49,7 +86,7 @@ export default function MedicalRecordsPage() {
           },
           {
             id: 'rec_3',
-            patient_id: 'demo_patient_id',
+            patient_id: patient?.id || 'demo_patient_id',
             title: 'GP Albuterol Inhaler Prescription',
             type: 'prescription',
             file_url: '#',
@@ -57,14 +94,13 @@ export default function MedicalRecordsPage() {
             created_at: new Date(Date.now() - 86400000).toISOString(),
             summary: 'Albuterol Sulfate HFA 90mcg. 2 puffs inhaled every 4-6 hours as needed for shortness of breath or cough.'
           }
-        ]);
-      } else {
-        const data = await apiClient.get<MedicalRecord[]>('/api/v1/records');
-        setRecords(data);
+        ];
       }
+
+      setRecords(allRecs);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to fetch medical records. Ensure local API is active.');
+      setError(err.message || 'Failed to fetch medical records.');
     } finally {
       setIsLoading(false);
     }

@@ -58,6 +58,7 @@ from app.api.v1.endpoints.careplans import router as careplans_router
 from app.api.v1.endpoints.memory import router as memory_router
 from app.api.v1.endpoints.doctor import router as doctor_router
 from app.api.v1.endpoints.analytics import router as analytics_router
+from app.api.v1.endpoints.records import router as records_router
 
 setup_logging()
 
@@ -92,6 +93,7 @@ app.include_router(careplans_router, prefix=settings.API_V1_STR)
 app.include_router(memory_router, prefix=settings.API_V1_STR)
 app.include_router(doctor_router, prefix=settings.API_V1_STR)
 app.include_router(analytics_router, prefix=settings.API_V1_STR)
+app.include_router(records_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
