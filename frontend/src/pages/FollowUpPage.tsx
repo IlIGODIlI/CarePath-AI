@@ -12,13 +12,15 @@ import {
   ShieldAlert,
   ChevronRight,
   Loader2,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react';
 import type { FollowUp } from '../types';
 
 export default function FollowUpPage() {
   const { patient } = usePatient();
   const [followups, setFollowups] = useState<FollowUp[]>([]);
+  const [uploadedDocs, setUploadedDocs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,11 +31,16 @@ export default function FollowUpPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const fetchFollowups = async () => {
-    if (!patient) return;
     setIsLoading(true);
     setError(null);
+
+    // Read uploaded documents
+    const storedDocsRaw = localStorage.getItem('carepath_uploaded_docs');
+    const storedDocs = storedDocsRaw ? JSON.parse(storedDocsRaw) : [];
+    setUploadedDocs(storedDocs);
+
     try {
-      if (patient.id === 'demo_patient_id') {
+      if (!patient || patient.id === 'demo_patient_id') {
         setFollowups([
           {
             id: '1',
@@ -150,6 +157,72 @@ export default function FollowUpPage() {
           <button onClick={fetchFollowups} className="text-xs font-bold underline cursor-pointer">Retry</button>
         </div>
       )}
+
+      {/* Uploaded Documents & Patient Baseline Sync Context Banner */}
+      <div className="bg-brand-card border border-brand-lavender/20 p-5 rounded-2xl shadow-sm flex flex-col gap-3">
+        <div className="flex items-center justify-between border-b border-brand-slate/10 pb-2.5">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4.5 h-4.5 text-brand-lavender" />
+            <h3 className="font-display font-extrabold text-xs text-brand-plum uppercase tracking-wider">
+              Active Clinical Data Sync (Uploaded Documents)
+            </h3>
+          </div>
+          <span className="text-[10px] font-bold text-brand-lavender bg-brand-lavender-light px-2.5 py-0.5 rounded-full">
+            {uploadedDocs.length > 0 ? `${uploadedDocs.length} Documents Synced` : 'Baseline Memory Synced'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xxs text-brand-slate font-light leading-relaxed">
+          {/* 1. Uploaded Documents */}
+          <div className="bg-brand-bg/50 border border-brand-slate/10 p-3 rounded-xl">
+            <span className="font-bold text-brand-plum block mb-1">Uploaded Health Records</span>
+            {uploadedDocs.length > 0 ? (
+              <ul className="list-disc pl-3.5 space-y-0.5 text-brand-plum font-normal">
+                {uploadedDocs.map((doc: any, i: number) => (
+                  <li key={i}>{doc.name} ({doc.category})</li>
+                ))}
+              </ul>
+            ) : (
+              <span>01_patient_medical_record.pdf, rx_albuterol_90mcg.pdf</span>
+            )}
+          </div>
+
+          {/* 2. Extracted Prescriptions */}
+          <div className="bg-brand-bg/50 border border-brand-slate/10 p-3 rounded-xl">
+            <span className="font-bold text-brand-plum block mb-1">Active Prescribed Medications</span>
+            {(() => {
+              const meds: string[] = [];
+              uploadedDocs.forEach((d: any) => {
+                if (d.result?.extracted?.medicines) {
+                  meds.push(...d.result.extracted.medicines);
+                }
+              });
+              if (meds.length > 0) {
+                return <span className="text-brand-plum font-normal">{Array.from(new Set(meds)).join(', ')}</span>;
+              }
+              return <span>Albuterol 90mcg, Metformin 500mg, Lisinopril 10mg</span>;
+            })()}
+          </div>
+
+          {/* 3. Diagnoses & Lab Metrics */}
+          <div className="bg-brand-bg/50 border border-brand-slate/10 p-3 rounded-xl">
+            <span className="font-bold text-brand-plum block mb-1">Diagnoses & Lab Findings</span>
+            {(() => {
+              const conds: string[] = [];
+              const meas: string[] = [];
+              uploadedDocs.forEach((d: any) => {
+                if (d.result?.extracted?.conditions) conds.push(...d.result.extracted.conditions);
+                if (d.result?.extracted?.measurements) meas.push(...d.result.extracted.measurements);
+              });
+              const facts = [...conds, ...meas];
+              if (facts.length > 0) {
+                return <span className="text-brand-plum font-normal">{Array.from(new Set(facts)).join(' | ')}</span>;
+              }
+              return <span>Hypertension, Diabetes Mellitus | Fasting Blood Sugar: 126 mg/dL</span>;
+            })()}
+          </div>
+        </div>
+      </div>
 
       {/* Escalation Prompt */}
       {hasPersistentSymptoms && (

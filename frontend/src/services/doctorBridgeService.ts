@@ -41,12 +41,62 @@ const INITIAL_QUESTIONS: DoctorQuestion[] = [
 
 export const doctorBridgeService = {
   getQuestions(): DoctorQuestion[] {
+    const storedDocsRaw = localStorage.getItem('carepath_uploaded_docs');
+    const storedDocs = storedDocsRaw ? JSON.parse(storedDocsRaw) : [];
+
+    const dynamicQuestions: DoctorQuestion[] = [];
+
+    storedDocs.forEach((doc: any, idx: number) => {
+      const docName = doc.name;
+      const conds = doc.result?.extracted?.conditions || [];
+      const meds = doc.result?.extracted?.medicines || [];
+      const meas = doc.result?.extracted?.measurements || [];
+
+      if (conds.length > 0) {
+        dynamicQuestions.push({
+          id: `q_doc_cond_${idx}`,
+          text: `In document '${docName}', diagnoses of ${conds.join(', ')} were noted. What long-term monitoring or diagnostic follow-ups do you recommend for these conditions?`,
+          relevance: `Cross-referenced directly from uploaded document '${docName}'.`,
+          isAsked: false
+        });
+      }
+
+      if (meds.length > 0) {
+        dynamicQuestions.push({
+          id: `q_doc_med_${idx}`,
+          text: `My prescription in '${docName}' lists ${meds.join(', ')}. Are any dosage adjustments or drug interaction checks needed based on my current symptoms?`,
+          relevance: `Cross-referenced directly from prescribed medications in '${docName}'.`,
+          isAsked: false
+        });
+      }
+
+      if (meas.length > 0) {
+        dynamicQuestions.push({
+          id: `q_doc_meas_${idx}`,
+          text: `Lab findings in '${docName}' recorded ${meas.join('; ')}. Do these values require repeat laboratory testing or lifestyle modifications?`,
+          relevance: `Cross-referenced directly from diagnostic measurements in '${docName}'.`,
+          isAsked: false
+        });
+      }
+    });
+
     const stored = localStorage.getItem('carepath_doctor_questions');
     if (!stored) {
-      localStorage.setItem('carepath_doctor_questions', JSON.stringify(INITIAL_QUESTIONS));
-      return INITIAL_QUESTIONS;
+      const finalQ = dynamicQuestions.length > 0 ? dynamicQuestions : INITIAL_QUESTIONS;
+      localStorage.setItem('carepath_doctor_questions', JSON.stringify(finalQ));
+      return finalQ;
     }
-    return JSON.parse(stored);
+
+    const currentList: DoctorQuestion[] = JSON.parse(stored);
+    const combined = [...dynamicQuestions, ...currentList];
+    const uniqueMap = new Map<string, DoctorQuestion>();
+    combined.forEach(q => {
+      if (!uniqueMap.has(q.text)) {
+        uniqueMap.set(q.text, q);
+      }
+    });
+
+    return Array.from(uniqueMap.values());
   },
 
   saveQuestions(questions: DoctorQuestion[]): void {
@@ -86,7 +136,7 @@ export const doctorBridgeService = {
 
   resetReview(): void {
     localStorage.removeItem('carepath_doctor_review');
-    localStorage.setItem('carepath_doctor_questions', JSON.stringify(INITIAL_QUESTIONS));
+    localStorage.removeItem('carepath_doctor_questions');
     window.dispatchEvent(new Event('doctor_review_updated'));
   }
 };

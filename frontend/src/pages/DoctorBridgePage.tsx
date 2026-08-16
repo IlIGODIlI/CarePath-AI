@@ -45,9 +45,16 @@ export default function DoctorBridgePage() {
   const [doctorName, setDoctorName] = useState('Dr. Robert Chen, MD');
 
   const [currentReview, setCurrentReview] = useState<DoctorReview | null>(null);
+  const [uploadedDocs, setUploadedDocs] = useState<any[]>([]);
 
   const loadData = () => {
     setQuestions(doctorBridgeService.getQuestions());
+    
+    // Read uploaded documents
+    const storedDocsRaw = localStorage.getItem('carepath_uploaded_docs');
+    const storedDocs = storedDocsRaw ? JSON.parse(storedDocsRaw) : [];
+    setUploadedDocs(storedDocs);
+
     const review = doctorBridgeService.getReview();
     setCurrentReview(review);
     
@@ -61,6 +68,12 @@ export default function DoctorBridgePage() {
       setDoctorName(review.reviewedBy);
     } else {
       setActiveStep(1);
+      if (storedDocs.length > 0) {
+        const names = storedDocs.map((d: any) => d.name).join(', ');
+        setDoctorNote(
+          `Reviewed patient uploaded clinical documents (${names}). Extracted clinical findings and symptoms evaluated. Confirmed clinical management plan and referral routing.`
+        );
+      }
     }
   };
 
@@ -227,30 +240,78 @@ export default function DoctorBridgePage() {
               {/* Treatment History & Records */}
               <div className="flex flex-col gap-5">
                 <div className="bg-brand-bg/50 border border-brand-slate/5 p-5 rounded-2xl flex flex-col gap-3">
-                  <h4 className="text-[10px] font-bold text-brand-slate uppercase tracking-wider border-b border-brand-slate/10 pb-1.5">Treatment & Medications</h4>
+                  <h4 className="text-[10px] font-bold text-brand-slate uppercase tracking-wider border-b border-brand-slate/10 pb-1.5 flex justify-between items-center">
+                    <span>Extracted Prescription Regimen</span>
+                    {uploadedDocs.length > 0 && <span className="text-brand-lavender text-[9px] font-semibold">Parsed from Uploaded Files</span>}
+                  </h4>
                   <div className="text-xxs text-brand-slate font-light leading-relaxed flex flex-col gap-2">
-                    <div>
-                      <span className="font-bold text-brand-plum">Albuterol Sulfate Inhaler</span>
-                      <span className="block">Dose: 90 mcg (2 puffs every 4-6 hours) &bull; Duration: 14 days</span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-brand-plum">Multivitamin Formula</span>
-                      <span className="block">Dose: 1 capsule daily &bull; Duration: Ongoing</span>
-                    </div>
+                    {(() => {
+                      const extractedMeds: { name: string; source: string }[] = [];
+                      uploadedDocs.forEach((d: any) => {
+                        if (d.result?.extracted?.medicines) {
+                          d.result.extracted.medicines.forEach((m: string) => {
+                            extractedMeds.push({ name: m, source: d.name });
+                          });
+                        }
+                      });
+
+                      if (extractedMeds.length > 0) {
+                        return extractedMeds.map((m, idx) => (
+                          <div key={idx}>
+                            <span className="font-bold text-brand-plum">{m.name}</span>
+                            <span className="block text-brand-slate">Prescribed in uploaded file: {m.source}</span>
+                          </div>
+                        ));
+                      }
+
+                      return (
+                        <>
+                          <div>
+                            <span className="font-bold text-brand-plum">Albuterol Sulfate Inhaler (90 mcg)</span>
+                            <span className="block">Dose: 2 puffs every 4-6 hours as needed &bull; Duration: 14 days</span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-brand-plum">Metformin Oral Tablet (500 mg)</span>
+                            <span className="block">Dose: 1 tablet twice daily with meals &bull; Ongoing</span>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 
                 <div className="bg-brand-bg/50 border border-brand-slate/5 p-5 rounded-2xl flex flex-col gap-3">
-                  <h4 className="text-[10px] font-bold text-brand-slate uppercase tracking-wider border-b border-brand-slate/10 pb-1.5">Diagnostics & Files</h4>
-                  <div className="text-xxs text-brand-slate font-light leading-relaxed flex flex-col gap-2">
-                    <div>
-                      <span className="font-bold text-brand-plum">chest_xray_post.png (PA view)</span>
-                      <span className="block">Marked lower lobe consolidation in lower right lung field.</span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-brand-plum">cbc_blood_report.pdf (Apex labs)</span>
-                      <span className="block">All primary cell values verified within standard thresholds.</span>
-                    </div>
+                  <h4 className="text-[10px] font-bold text-brand-slate uppercase tracking-wider border-b border-brand-slate/10 pb-1.5 flex justify-between items-center">
+                    <span>Uploaded Diagnostics & Files</span>
+                    {uploadedDocs.length > 0 && <span className="text-brand-lavender text-[9px] font-semibold">{uploadedDocs.length} Document(s)</span>}
+                  </h4>
+                  <div className="text-xxs text-brand-slate font-light leading-relaxed flex flex-col gap-2.5">
+                    {uploadedDocs.length > 0 ? (
+                      uploadedDocs.map((doc: any) => {
+                        const meds = doc.result?.extracted?.medicines?.length > 0 ? `Medicines: ${doc.result.extracted.medicines.join(', ')}` : '';
+                        const conds = doc.result?.extracted?.conditions?.length > 0 ? `Diagnoses: ${doc.result.extracted.conditions.join(', ')}` : '';
+                        const tests = doc.result?.extracted?.measurements?.length > 0 ? `Metrics: ${doc.result.extracted.measurements.join('; ')}` : '';
+                        const sub = [conds, meds, tests].filter(Boolean).join(' | ');
+
+                        return (
+                          <div key={doc.id} className="bg-brand-card p-2.5 rounded-xl border border-brand-slate/10">
+                            <span className="font-bold text-brand-plum block">{doc.name} ({doc.category})</span>
+                            <span className="block text-brand-slate mt-0.5">{sub || doc.result?.summary?.keyInfo || 'Parsed into clinical memory graph.'}</span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <>
+                        <div>
+                          <span className="font-bold text-brand-plum">01_patient_medical_record.pdf</span>
+                          <span className="block">Extracted: Hypertension, Diabetes Mellitus, Metformin 500mg, Lisinopril 10mg.</span>
+                        </div>
+                        <div>
+                          <span className="font-bold text-brand-plum">rx_albuterol_90mcg.pdf</span>
+                          <span className="block">Extracted: Albuterol 90mcg (2 puffs every 4-6 hours).</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -262,7 +323,11 @@ export default function DoctorBridgePage() {
               <div>
                 <span className="text-[10px] font-bold text-brand-lavender uppercase tracking-wider block">AI Navigation Suggestion</span>
                 <p className="text-xs text-brand-plum leading-relaxed font-light mt-1">
-                  CarePath noticed consolidation markings in your right lower lobe scan and sub-optimal symptom recovery under bronchodilators. CarePath suggests discussing with your doctor whether a specialist pulmonologist consult is appropriate.
+                  {uploadedDocs.length > 0 ? (
+                    `CarePath reviewed your uploaded documents (${uploadedDocs.map(d => d.name).join(', ')}). Based on parsed health records and symptom logs, CarePath suggests discussing your ongoing medication response and diagnostic values with your primary practitioner.`
+                  ) : (
+                    'CarePath noticed consolidation markings in your right lower lobe scan and sub-optimal symptom recovery under bronchodilators. CarePath suggests discussing with your doctor whether a specialist pulmonologist consult is appropriate.'
+                  )}
                 </p>
               </div>
             </div>
