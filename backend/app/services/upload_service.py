@@ -54,9 +54,9 @@ def generate_clinical_document_summary(
     report: Any
 ) -> Tuple[str, str]:
     """
-    Generates a natural language summary and AI clinical insight for an uploaded document.
+    Generates a concise, plain-language patient-friendly summary and AI insight for an uploaded document.
     Attempts Google Gemini LLM generation if GEMINI_API_KEY is available;
-    otherwise employs a fluent, comprehensive natural language synthesizer.
+    otherwise employs a clear, simple natural language synthesizer.
     """
     api_key = os.getenv("GEMINI_API_KEY", "")
     
@@ -66,19 +66,21 @@ def generate_clinical_document_summary(
             import httpx
             import json
             prompt = (
-                f"You are an expert clinical AI documentation specialist for CarePath AI.\n"
-                f"Analyze this uploaded medical document and produce a JSON response with two keys:\n"
-                f"1. 'overview': A 3-4 sentence comprehensive, fluent natural language summary of the document describing the patient's diagnosed conditions, prescribed medications with dosages, laboratory test values/measurements, and reported symptoms. DO NOT write generic count sentences like 'Extracted 2 medications'. Write a professional clinical overview in natural language.\n"
-                f"2. 'ai_insight': A 3-4 sentence clinical assessment detailing the significance of these findings, therapeutic implications, safety recommendations, and how it updates the patient's care plan.\n\n"
+                f"You are a friendly clinical AI assistant for CarePath AI.\n"
+                f"Analyze this uploaded medical document and create a short, concise, patient-friendly summary in clear plain language.\n"
+                f"Write ONLY 1-2 simple, easy-to-understand sentences describing what this document is about (e.g. key diagnoses, prescribed medicines, lab test results, or main symptoms).\n"
+                f"Avoid complex medical jargon so any patient can understand it immediately.\n\n"
+                f"Produce a JSON response with two keys:\n"
+                f"1. 'overview': A concise 1-2 sentence plain-language summary of the document for the patient timeline.\n"
+                f"2. 'ai_insight': A concise 1-2 sentence key takeaway explaining what the patient should know or do next.\n\n"
                 f"Document Filename: {filename}\n"
                 f"Category: {category}\n"
-                f"Extracted Text:\n{extracted_text[:3500]}\n"
+                f"Extracted Text:\n{extracted_text[:3000]}\n"
                 f"Extracted Facts:\n"
-                f"- Diagnoses/Conditions: {', '.join(conditions) if conditions else 'None specified'}\n"
-                f"- Medications: {', '.join(medicines) if medicines else 'None specified'}\n"
-                f"- Test Measurements: {', '.join(measurements) if measurements else 'None specified'}\n"
-                f"- Symptoms: {', '.join(symptoms) if symptoms else 'None specified'}\n"
-                f"- Procedures/Instructions: {', '.join(instructions) if instructions else 'None specified'}\n\n"
+                f"- Diagnoses: {', '.join(conditions) if conditions else 'None'}\n"
+                f"- Medicines: {', '.join(medicines) if medicines else 'None'}\n"
+                f"- Lab Results: {', '.join(measurements) if measurements else 'None'}\n"
+                f"- Symptoms: {', '.join(symptoms) if symptoms else 'None'}\n\n"
                 f"Respond ONLY with valid JSON: {{\n  \"overview\": \"...\",\n  \"ai_insight\": \"...\"\n}}"
             )
             
@@ -102,42 +104,28 @@ def generate_clinical_document_summary(
         except Exception as e:
             print(f"Notice: Gemini LLM generation deferred to natural language synthesizer: {e}")
 
-    # 2. Fluent Natural Language Clinical Synthesizer
-    summary_sentences = []
+    # 2. Concise Plain-Language Patient Synthesizer
+    summary_parts = []
     
     if conditions:
-        cond_str = ", ".join(conditions)
-        summary_sentences.append(f"The document details clinical diagnoses including {cond_str}.")
-    elif category == "Medical Report":
-        summary_sentences.append(f"The report documents clinical diagnostic evaluation and patient health observations.")
-
+        summary_parts.append(f"Diagnosis: {', '.join(conditions)}")
     if medicines:
-        med_str = ", ".join(medicines)
-        summary_sentences.append(f"Prescribed medication regimen includes {med_str}.")
-
+        summary_parts.append(f"Prescribed: {', '.join(medicines)}")
     if measurements:
-        meas_str = ", ".join(measurements)
-        summary_sentences.append(f"Laboratory findings and test measurements recorded: {meas_str}.")
+        summary_parts.append(f"Lab Results: {', '.join(measurements)}")
     elif tests:
-        test_str = ", ".join(tests)
-        summary_sentences.append(f"Diagnostic panels ordered: {test_str}.")
-
+        summary_parts.append(f"Tests: {', '.join(tests)}")
     if symptoms:
-        sym_str = ", ".join(symptoms)
-        summary_sentences.append(f"Reported symptoms and clinical observations: {sym_str}.")
+        summary_parts.append(f"Symptoms: {', '.join(symptoms)}")
 
-    if instructions:
-        inst_str = ", ".join(instructions)
-        summary_sentences.append(f"Clinical instructions & procedures: {inst_str}.")
-
-    if not summary_sentences:
-        overview_text = f"Clinical document '{filename}' ({category}) contains parsed health records integrated into the patient profile."
+    if summary_parts:
+        overview_text = f"Uploaded {category} ({filename}): " + "; ".join(summary_parts) + "."
     else:
-        overview_text = f"Clinical Overview for '{filename}': " + " ".join(summary_sentences)
+        overview_text = f"Uploaded {category} '{filename}' added to your health records."
 
     ai_insight_text = (
-        f"CarePath AI analyzed '{filename}'. {overview_text} "
-        f"All extracted medications, laboratory findings, diagnoses, and symptom parameters have been integrated into your patient memory graph for longitudinal multi-agent tracking."
+        f"CarePath reviewed '{filename}'. All extracted medications, test findings, and diagnoses "
+        f"have been saved to your health timeline."
     )
 
     return overview_text, ai_insight_text
