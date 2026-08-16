@@ -23,7 +23,13 @@ if DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace("+asyncpg", "", 1)
 
         
-    engine = create_engine(DATABASE_URL)
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        pool_size=10,
+        max_overflow=20,
+    )
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 else:
     print("WARNING: DATABASE_URL not found in environment variables.")

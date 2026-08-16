@@ -4,6 +4,8 @@ from database.crud import user_crud, clinical_crud, ai_crud, system_crud
 from database.models import User, PatientProfile
 import uuid
 
+from database.crud.utils import safe_uuid
+
 def get_patient_carepath_memory(session: Session, patient_id: str) -> Dict[str, Any]:
     """
     Aggregates the complete CarePath Memory for a patient into a unified, structured history graph.
@@ -21,9 +23,10 @@ def get_patient_carepath_memory(session: Session, patient_id: str) -> Dict[str, 
      ├── Follow-ups (FollowUp)
      └── Doctor Feedback (Feedback)
     """
-    uid = uuid.UUID(patient_id) if isinstance(patient_id, str) else patient_id
-    user = user_crud.get_user(session, uid)
-    profile = user_crud.get_patient_profile(session, uid)
+    uid = safe_uuid(patient_id)
+    
+    user = user_crud.get_user(session, uid) if uid else None
+    profile = user_crud.get_patient_profile(session, uid) if uid else None
     
     # 1. Profile metadata
     profile_data = {

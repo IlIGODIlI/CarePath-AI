@@ -1,7 +1,18 @@
 from typing import TypeVar, Type, Any, Optional
 from sqlalchemy.orm import Session
+import uuid
 
 ModelType = TypeVar("ModelType")
+
+def safe_uuid(val: Any) -> Optional[uuid.UUID]:
+    if isinstance(val, uuid.UUID):
+        return val
+    if not val or not isinstance(val, str):
+        return None
+    try:
+        return uuid.UUID(val)
+    except (ValueError, AttributeError):
+        return None
 
 def create_record(session: Session, model: Type[ModelType], **kwargs) -> ModelType:
     """

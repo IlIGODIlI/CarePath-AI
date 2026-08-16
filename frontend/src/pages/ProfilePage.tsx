@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePatient } from '../context/PatientContext';
-import { AlertCircle, CheckCircle2, User, Save, Heart, ShieldAlert } from 'lucide-react';
+import { AlertCircle, CheckCircle2, User, Save, Heart, ShieldAlert, X, Sparkles } from 'lucide-react';
 
 export default function ProfilePage() {
   const { patient, updatePatientProfile, isLoading, error } = usePatient();
@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const [medicalHistory, setMedicalHistory] = useState('');
   const [currentSymptoms, setCurrentSymptoms] = useState('');
   
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
   // Sync state with patient context
   useEffect(() => {
@@ -30,7 +30,6 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccessMessage(null);
 
     const allergies = allergiesInput
       .split(',')
@@ -47,22 +46,19 @@ export default function ProfilePage() {
         medical_history: medicalHistory,
         current_symptoms: currentSymptoms,
       });
-      setSuccessMessage('Patient context updated successfully.');
-      setTimeout(() => setSuccessMessage(null), 4000);
+      setShowSuccessModal(true);
     } catch (err) {
       console.error('Failed to update patient profile:', err);
     }
   };
 
-  return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-6">
+  const parsedAllergies = allergiesInput
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
 
-      {successMessage && (
-        <div className="bg-brand-sage-bg border border-brand-sage-text/10 text-brand-sage-text p-4 rounded-xl text-sm flex items-center gap-2.5 shadow-sm">
-          <CheckCircle2 className="w-5 h-5 shrink-0" />
-          <span>{successMessage}</span>
-        </div>
-      )}
+  return (
+    <div className="max-w-3xl mx-auto flex flex-col gap-6 relative">
 
       {error && (
         <div className="bg-brand-rose-bg border border-brand-rose-text/10 text-brand-rose-text p-4 rounded-xl text-sm flex items-center gap-2.5 shadow-sm">
@@ -179,6 +175,68 @@ export default function ProfilePage() {
           <Save className="w-4 h-4" />
         </button>
       </form>
+
+      {/* Centered Profile Updated Dialog Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-in fade-in duration-200">
+          <div 
+            className="bg-brand-card border border-brand-slate/20 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl flex flex-col items-center text-center relative animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-4 right-4 p-2 text-brand-slate hover:text-brand-plum hover:bg-brand-bg rounded-full transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Glowing Icon Badge */}
+            <div className="w-16 h-16 bg-brand-sage-bg border border-brand-sage-text/20 text-brand-sage-text rounded-2xl flex items-center justify-center mb-4 shadow-sm relative">
+              <CheckCircle2 className="w-8 h-8" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand-sage-text rounded-full flex items-center justify-center text-white">
+                <Sparkles className="w-2.5 h-2.5" />
+              </div>
+            </div>
+
+            {/* Modal Title & Message */}
+            <h3 className="font-display text-2xl font-bold text-brand-plum mb-2">Profile Updated!</h3>
+            <p className="text-sm text-brand-slate leading-relaxed mb-6">
+              Your patient profile and clinical context have been successfully saved to your CarePath health graph.
+            </p>
+
+            {/* Profile Snapshot Summary */}
+            <div className="w-full bg-brand-bg/80 border border-brand-slate/10 rounded-2xl p-4 mb-6 flex flex-col gap-2.5 text-left text-xs">
+              <div className="flex justify-between items-center pb-2 border-b border-brand-slate/10">
+                <span className="font-semibold text-brand-slate">Patient Name:</span>
+                <span className="font-bold text-brand-plum">{name || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-brand-slate">Demographics:</span>
+                <span className="text-brand-plum">{age} yrs • {gender}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-brand-slate">Blood Group:</span>
+                <span className="text-brand-plum font-semibold">{bloodType || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-brand-slate">Active Allergies:</span>
+                <span className="text-brand-plum">{parsedAllergies.length > 0 ? parsedAllergies.join(', ') : 'None listed'}</span>
+              </div>
+            </div>
+
+            {/* Action Button */}
+            <button
+              type="button"
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full bg-brand-lavender hover:bg-brand-lavender-hover text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-md shadow-brand-lavender/25 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              Continue to Workspace
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

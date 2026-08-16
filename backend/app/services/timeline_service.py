@@ -5,25 +5,31 @@ from database.models import TimelineEvent
 import uuid
 from datetime import datetime, timezone
 
+from database.crud.utils import safe_uuid
+
 def get_timeline_events(session: Session, patient_id: str, event_type: Optional[str] = None, limit: int = 50) -> List[TimelineEvent]:
-    uid = uuid.UUID(patient_id) if isinstance(patient_id, str) else patient_id
+    uid = safe_uuid(patient_id)
+    if not uid:
+        return []
     return system_crud.get_user_timeline_events(session=session, user_id=uid, event_type=event_type, limit=limit)
 
 def add_timeline_event(session: Session, data: dict) -> TimelineEvent:
     now = datetime.now(timezone.utc)
     user_id = data.get("user_id")
     event_date = data.get("event_date")
+    uid = safe_uuid(user_id)
+    rel_id = safe_uuid(data.get("related_record_id"))
     
     return system_crud.create_timeline_event(
         session=session,
         event_id=uuid.uuid4(),
-        user_id=uuid.UUID(user_id) if isinstance(user_id, str) else user_id,
+        user_id=uid,
         event_type=data.get("event_type", "GENERAL"),
         event_date=event_date or now,
         event_title=data.get("event_title", ""),
         event_description=data.get("event_description", ""),
         severity=data.get("severity", "MEDIUM"),
-        related_record_id=uuid.UUID(data.get("related_record_id")) if data.get("related_record_id") else None,
+        related_record_id=rel_id,
         related_record_type=data.get("related_record_type"),
         visible_to_patient=data.get("visible_to_patient", True),
         created_at=now

@@ -9,11 +9,13 @@ except ModuleNotFoundError:
 import uuid
 from datetime import datetime, timezone
 
+from database.crud.utils import safe_uuid
+
 def add_medication(session: Session, data: dict) -> Medication:
     now = datetime.now(timezone.utc)
     user_id = data.get("user_id")
     med_id = uuid.uuid4()
-    uid = uuid.UUID(user_id) if isinstance(user_id, str) else user_id
+    uid = safe_uuid(user_id)
     med_name = data.get("medication_name", "")
     
     med = clinical_crud.create_medication(
@@ -54,11 +56,15 @@ def add_medication(session: Session, data: dict) -> Medication:
     return med
 
 def get_patient_medications(session: Session, patient_id: str, status: Optional[str] = None) -> List[Medication]:
-    uid = uuid.UUID(patient_id) if isinstance(patient_id, str) else patient_id
+    uid = safe_uuid(patient_id)
+    if not uid:
+        return []
     return clinical_crud.get_user_medications(session=session, user_id=uid, status=status)
 
 def update_medication_status(session: Session, medication_id: str, status: str) -> Optional[Medication]:
-    mid = uuid.UUID(medication_id) if isinstance(medication_id, str) else medication_id
+    mid = safe_uuid(medication_id)
+    if not mid:
+        return None
     med = clinical_crud.update_medication_status(session=session, medication_id=mid, status=status)
     if med and status.upper() in ["COMPLETED", "DISCONTINUED"]:
         try:
