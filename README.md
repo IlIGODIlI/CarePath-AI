@@ -253,6 +253,7 @@ Features:
 
 # 🔬 AI Workflow
 
+
 ```text
 Patient Symptoms
         │
@@ -280,7 +281,119 @@ Care Plan Generation
         ▼
 Continuous Follow-Up
 ```
+### 🔄 AI Workflow
 
+```mermaid
+flowchart TD
+
+    START(["👤 Patient Request"])
+
+    INTAKE["📥 Intake Agent<br/>Symptoms + Context"]
+
+    SAFETY{"🛡️ Safety Agent<br/>Safety Check"}
+
+    MEMORY["🧠 CarePath Memory<br/>Retrieve Patient Context"]
+
+    DOCS["📄 Medical Documents Agent<br/>Reports + Prescriptions"]
+
+    VISION["👁️ Vision Agent<br/>Supported Medical Images"]
+
+    TIMELINE["🕐 Timeline Agent<br/>Build Healthcare Journey"]
+
+    REASONING["🧩 Clinical Reasoning Agent<br/>Combine Patient Context"]
+
+    EVIDENCE["📚 Evidence Agent<br/>RAG + Trusted Sources"]
+
+    REFERRAL["🩺 Referral Agent<br/>Specialist Navigation"]
+
+    DOCTOR["👨‍⚕️ Doctor Bridge<br/>Patient Brief + Questions"]
+
+    REVIEW{"🤝 Clinician Review<br/>Required?"}
+
+    CARE["📝 Care Plan Agent<br/>Personalized Next Steps"]
+
+    MED["💊 Medication Agent<br/>Medication Workflow"]
+
+    FOLLOW["🔔 Follow-up Agent<br/>Monitoring + Follow-up"]
+
+    SUP["🤖 LangGraph Supervisor<br/>State + Agent Routing"]
+
+    END(["✅ Structured CarePath Response"])
+
+
+    START --> INTAKE
+
+    INTAKE --> SUP
+
+    SUP --> SAFETY
+
+    SAFETY -->|Safety concern| END
+    SAFETY -->|Continue| MEMORY
+
+    MEMORY --> DOCS
+    MEMORY --> VISION
+
+    DOCS --> TIMELINE
+    VISION --> TIMELINE
+
+    TIMELINE --> REASONING
+
+    REASONING --> EVIDENCE
+
+    EVIDENCE --> REFERRAL
+
+    REFERRAL --> DOCTOR
+
+    DOCTOR --> REVIEW
+
+    REVIEW -->|Yes| DOCTOR
+    REVIEW -->|Approved / Continue| CARE
+
+    CARE --> MED
+    MED --> FOLLOW
+
+    FOLLOW --> SUP
+
+    SUP --> END
+```
+
+### Workflow Logic
+
+```text
+Patient Input
+     ↓
+Safety Check
+     ↓
+Retrieve Patient Context
+     ↓
+Analyze Documents / Images
+     ↓
+Build Patient Timeline
+     ↓
+Clinical Reasoning
+     ↓
+Evidence Retrieval (RAG)
+     ↓
+Specialist Navigation
+     ↓
+Doctor Interaction
+     ↓
+Human Review
+     ↓
+Personalized Care Plan
+     ↓
+Medication Support
+     ↓
+Follow-up Intelligence
+     ↓
+Updated Patient Context
+```
+
+The workflow is **state-driven rather than a fixed linear pipeline**.  
+The LangGraph Supervisor evaluates the current patient state and routes
+execution to the relevant specialized agent. Agents update the shared
+workflow state, allowing subsequent decisions to use the accumulated
+context.
 ---
 
 # ⚙ Backend Architecture
