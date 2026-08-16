@@ -296,10 +296,13 @@ class OCREngine(TextExtractionService):
             except Exception as exc:
                 message = f"{backend_name}: {exc}"
                 errors.append(message)
-                logger.warning(
-                    "Unable to initialize OCR backend: %s",
-                    message,
-                )
+                if configured_backend == "auto" and backend_name == "tesseract":
+                    logger.debug("Tesseract not available in auto mode, falling back to EasyOCR: %s", message)
+                else:
+                    logger.warning(
+                        "Unable to initialize OCR backend: %s",
+                        message,
+                    )
 
         self._backend_name = None
         self._backend = None

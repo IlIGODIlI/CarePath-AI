@@ -47,6 +47,28 @@ class ApiClient {
     return this.handleResponse<T>(response);
   }
 
+  async uploadDocument<T>(path: string, file: File, category: string, patientId?: string): Promise<T> {
+    const token = localStorage.getItem('carepath_token');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('category', category);
+    if (patientId) {
+      formData.append('patient_id', patientId);
+    }
+
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    return this.handleResponse<T>(response);
+  }
+
   async put<T>(path: string, body: any): Promise<T> {
     const response = await fetch(`${BASE_URL}${path}`, {
       method: 'PUT',

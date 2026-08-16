@@ -6,8 +6,39 @@ Configures Middlewares, CORS, Structured Logging, Health Check, and mounts API v
 
 import sys
 import os
-# Add the project root (CarePath-AI) to sys.path so it can resolve the 'database' package
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning)
+
+# Add project root to sys.path
+backend_app_dir = os.path.abspath(os.path.dirname(__file__))
+backend_dir = os.path.abspath(os.path.join(backend_app_dir, ".."))
+project_root = os.path.abspath(os.path.join(backend_dir, ".."))
+root_app_dir = os.path.abspath(os.path.join(project_root, "app"))
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Unify top-level 'app' package
+if "app" in sys.modules and hasattr(sys.modules["app"], "__path__"):
+    if root_app_dir not in sys.modules["app"].__path__:
+        sys.modules["app"].__path__.append(root_app_dir)
+
+# Unify all sub-packages (core, services, schemas, models, api)
+for subpkg in ["core", "services", "schemas", "models", "api"]:
+    pkg_name = f"app.{subpkg}"
+    backend_sub = os.path.join(backend_app_dir, subpkg)
+    root_sub = os.path.join(root_app_dir, subpkg)
+    try:
+        mod = __import__(pkg_name, fromlist=["__path__"])
+        if hasattr(mod, "__path__"):
+            if root_sub not in mod.__path__ and os.path.exists(root_sub):
+                mod.__path__.append(root_sub)
+            if backend_sub not in mod.__path__ and os.path.exists(backend_sub):
+                if backend_sub not in mod.__path__:
+                    mod.__path__.insert(0, backend_sub)
+    except Exception:
+        pass
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,7 +71,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=getattr(settings, "BACKEND_CORS_ORIGINS", getattr(settings, "CORS_ORIGINS", ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"])),
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],

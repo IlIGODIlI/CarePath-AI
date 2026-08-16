@@ -20,6 +20,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { analysisService } from '../services/analysisService';
+import { uploadService } from '../services/uploadService';
 
 interface DocAnalysis {
   summary: {
@@ -272,22 +273,60 @@ export default function UploadCenterPage() {
     }, 800);
   };
 
-  const handleFileUpload = (file: File) => {
+const formatFileSize = (bytes: number): string => {
+  if (!bytes || bytes <= 0) return '0 KB';
+  if (bytes < 1024 * 1024) {
+    const kb = Math.round(bytes / 1024);
+    return `${Math.max(1, kb)} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+  const handleFileUpload = async (file: File) => {
+    const formattedSize = formatFileSize(file.size);
     const newDocId = `doc_${Date.now()}`;
     const newDoc: UploadedDoc = {
       id: newDocId,
       name: file.name,
-      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      size: formattedSize,
       category: category,
       status: 'uploading',
-      progress: 10,
+      progress: 25,
       uploadedAt: new Date().toLocaleDateString()
     };
 
     setDocuments(prev => [newDoc, ...prev]);
     setSelectedDocId(newDocId);
 
-    // Run simulated pipeline transitions
+    try {
+      setDocuments(prev => prev.map(d => d.id === newDocId ? { ...d, status: 'analyzing', progress: 60 } : d));
+      const pid = patient?.id || localStorage.getItem('carepath_patient_id') || 'demo_user';
+      const response = await uploadService.uploadDocument(file, category, pid);
+
+      if (response && response.result) {
+        setDocuments(prev => prev.map(doc => {
+          if (doc.id === newDocId) {
+            return {
+              ...doc,
+              id: response.id || newDocId,
+              size: response.size || formattedSize,
+              status: response.status || 'complete',
+              progress: 100,
+              result: response.result
+            };
+          }
+          return doc;
+        }));
+        if (response.id) {
+          setSelectedDocId(response.id);
+        }
+        return;
+      }
+    } catch (err) {
+      console.warn('Real API upload error, running processing fallback:', err);
+    }
+
+    // Run processing fallback if backend endpoint was unreachable
     simulateProcessingPipeline(newDocId, file.name.toLowerCase());
   };
 

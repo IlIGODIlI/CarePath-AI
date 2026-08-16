@@ -1,16 +1,19 @@
 import { apiClient } from './apiClient';
-import type { MedicalRecord } from '../types';
 
 export const uploadService = {
-  async uploadImage(file: File): Promise<MedicalRecord> {
-    return apiClient.postFile<MedicalRecord>('/api/v1/upload/image', file);
+  async uploadDocument(file: File, category: string, patientId?: string): Promise<any> {
+    return apiClient.uploadDocument<any>('/api/v1/upload/document', file, category, patientId);
   },
 
-  async uploadReport(file: File): Promise<MedicalRecord> {
-    return apiClient.postFile<MedicalRecord>('/api/v1/upload/report', file);
+  async uploadImage(file: File, patientId?: string): Promise<any> {
+    return apiClient.uploadDocument<any>('/api/v1/upload/image', file, 'Imaging/Scan', patientId);
   },
 
-  async uploadPrescription(file: File): Promise<MedicalRecord> {
-    return apiClient.postFile<MedicalRecord>('/api/v1/upload/prescription', file);
+  async uploadReport(file: File, patientId?: string): Promise<any> {
+    return apiClient.uploadDocument<any>('/api/v1/upload/report', file, 'Medical Report', patientId);
+  },
+
+  async uploadPrescription(file: File, patientId?: string): Promise<any> {
+    return apiClient.uploadDocument<any>('/api/v1/upload/prescription', file, 'Prescription', patientId);
   }
 };

@@ -80,3 +80,8 @@ def get_logger(name: str = _ROOT_LOGGER_NAME) -> logging.Logger:
 # ---------------------------------------------------------------------------
 logger: logging.Logger = get_logger(_ROOT_LOGGER_NAME)
 
+
+def setup_logging():
+    """Initializes logging sink for backward compatibility."""
+    _build_root_logger()
+

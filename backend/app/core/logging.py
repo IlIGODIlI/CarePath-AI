@@ -49,3 +49,8 @@ def setup_logging():
 
 setup_logging()
 logger = structlog.get_logger("carepath_backend")
+
+
+def get_logger(name: str = "carepath_backend"):
+    """Returns a logger instance compatible with both structlog and standard logging."""
+    return structlog.get_logger(name)
