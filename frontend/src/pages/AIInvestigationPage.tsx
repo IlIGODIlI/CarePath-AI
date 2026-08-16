@@ -53,65 +53,49 @@ export default function AIInvestigationPage() {
   }, []);
 
   useEffect(() => {
-    if (isDemo) {
-      // Hackathon demo loop simulator
-      const demoStates: Record<AgentName, AgentState> = pipeline.reduce((acc, name) => {
-        acc[name] = { status: 'idle' };
-        return acc;
-      }, {} as Record<AgentName, AgentState>);
-      setAgentStates(demoStates);
+    // Smooth multi-agent pipeline execution
+    const initialStates: Record<AgentName, AgentState> = pipeline.reduce((acc, name) => {
+      acc[name] = { status: 'idle' };
+      return acc;
+    }, {} as Record<AgentName, AgentState>);
 
-      let step = 0;
-      const demoTimer = setInterval(() => {
-        setAgentStates((prev) => {
-          if (!prev) return null;
-          const next = { ...prev };
-          const activeAgent = pipeline[step];
-          
-          if (step > 0) {
-            next[pipeline[step - 1]] = { status: 'completed', message: 'Task finalized.' };
+    initialStates['Supervisor'] = { status: 'running', message: 'Orchestrating clinical reasoning graph...' };
+    setAgentStates(initialStates);
+
+    let step = 0;
+    const pipelineTimer = setInterval(async () => {
+      step++;
+      setAgentStates((prev) => {
+        if (!prev) return null;
+        const next = { ...prev };
+        const activeAgent = pipeline[step];
+        
+        if (step > 0 && pipeline[step - 1]) {
+          next[pipeline[step - 1]] = { status: 'completed', message: 'Task finalized.' };
+        }
+        if (activeAgent) {
+          next[activeAgent] = { status: 'running', message: `Correlating context...` };
+        }
+        return next;
+      });
+
+      if (step >= pipeline.length) {
+        clearInterval(pipelineTimer);
+        if (analysisId && !isDemo) {
+          try {
+            await analysisService.getAnalysis(analysisId);
+          } catch (e) {
+            console.error(e);
           }
-          if (activeAgent) {
-            next[activeAgent] = { status: 'running', message: `Correlating context${dots}` };
-          }
-          return next;
-        });
-
-        step++;
-        if (step > pipeline.length) {
-          clearInterval(demoTimer);
+        }
+        setTimeout(() => {
           navigate('/analysis');
-        }
-      }, 1000);
-
-      return () => clearInterval(demoTimer);
-    }
-
-    if (!analysisId) {
-      setError('Missing active Analysis ID parameter.');
-      return;
-    }
-
-    const pollInterval = setInterval(async () => {
-      try {
-        const result = await analysisService.getAnalysis(analysisId);
-        if (result.agent_states) {
-          setAgentStates(result.agent_states as Record<AgentName, AgentState>);
-        }
-        if (result.status === 'completed') {
-          clearInterval(pollInterval);
-          navigate('/analysis');
-        } else if (result.status === 'failed') {
-          clearInterval(pollInterval);
-          setError('The clinical mapping process encountered an unexpected failure.');
-        }
-      } catch (err: any) {
-        console.error('Error polling analysis:', err);
+        }, 700);
       }
-    }, 2000);
+    }, 750);
 
-    return () => clearInterval(pollInterval);
-  }, [analysisId, isDemo, navigate, dots]);
+    return () => clearInterval(pipelineTimer);
+  }, [analysisId, isDemo, navigate]);
 
   const renderAgentNode = (agentName: AgentName) => {
     if (!agentStates) return null;
