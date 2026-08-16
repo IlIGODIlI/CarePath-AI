@@ -26,1352 +26,251 @@
   <a href="#safety">Safety</a>
 </p>
 
+---
+
+# 🧠 Overview
+
+**CarePath AI** is an AI-powered clinical intelligence and continuity-of-care platform designed to help patients navigate complex healthcare journeys with greater clarity and continuity.
+
+Instead of functioning as a conventional medical chatbot, CarePath AI combines **FastAPI, LangGraph-based multi-agent orchestration, medical document intelligence, evidence-backed retrieval, patient memory, timeline intelligence, specialist navigation, doctor interaction, personalized care planning, medication support, and follow-up intelligence** into a unified workflow.
+
+The platform is designed around one core objective:
+
+> **Help patients reach the right guidance, the right specialist, and the right next step at the right time.**
+
+### The Core Problem
+
+Healthcare information is often fragmented across:
+
+- Symptoms and patient descriptions
+- Medical reports and prescriptions
+- Previous consultations
+- Treatment history
+- Medication information
+- Test results
+- Specialist referrals
+- Follow-up interactions
+
+As a result, patients may repeatedly explain their history, lose track of important information, undergo unnecessary delays, or struggle to understand what they should do next.
+
+### The CarePath Approach
+
+CarePath AI creates a continuous information flow:
+
+```text
+Patient Symptoms
+       ↓
+Medical Information
+       ↓
+AI Analysis
+       ↓
+Patient Context & Memory
+       ↓
+Evidence Retrieval
+       ↓
+Clinical Reasoning
+       ↓
+Specialist Navigation
+       ↓
+Doctor Interaction
+       ↓
+Personalized Care Plan
+       ↓
+Medication & Follow-up
+       ↓
+Continuous Care
+
+
 <a id="overview"></a>
 
-Overview
-
-CarePath AI is an autonomous multi-agent healthcare navigation platform designed to help patients move from symptoms and medical records toward the appropriate specialist, evidence-backed clinical context, care preparation, and follow-up.
-
-Instead of building another medical chatbot, the system is designed around a multi-agent healthcare journey. It combines Computer Vision, Clinical NLP, OCR, RAG, embeddings, clinical extraction, patient memory, timeline analysis, treatment-response intelligence, referral ranking, personalized care planning, and follow-up orchestration.
-
-The core problem being addressed is diagnostic and navigation delay: patients may visit multiple doctors, repeat tests, struggle to understand medical documents, or fail to connect symptoms and treatment history across consultations. CarePath AI is intended to organize that information and guide the patient through the healthcare system rather than replace clinicians.
-
-The original CarePath architecture defines the system as a healthcare-navigation platform using Computer Vision, NLP, Machine Learning, and RAG, with specialized agents collaborating through a central workflow. fileciteturn6file4L470-L478
-
-Real Time CarePath Login / Dashboard
-
-<p align="center">
-  <img src="images/LOGIN-PAGE(README).jpeg" width="100%">
-</p>
-
-Replace the image above with the final CarePath product screenshot available in the repository.
-
-<a id="key-features"></a>
-
-✨ Key Features
-
-Capability
-
-What it enables
-
-AI-powered patient intake
-
-Structures symptoms, severity, duration, and patient context before downstream processing.
-
-Medical document intelligence
-
-OCR and clinical extraction for prescriptions, laboratory reports, clinical notes, and other medical documents.
-
-Medical computer vision
-
-Processes medical images and DICOM-compatible inputs and returns structured visual findings and confidence information.
-
-Clinical NLP / Bio-NER
-
-Extracts symptoms, medications, diagnoses, anatomy, procedures, and laboratory-related entities with negation awareness.
-
-Evidence-based RAG
-
-Retrieves relevant clinical guideline content from ChromaDB and returns evidence/source information.
-
-Clinical timeline
-
-Organizes patient events, symptoms, records, treatments, and consultations chronologically.
-
-Clinical reasoning
-
-Combines structured patient information, evidence, and previous outputs to form navigation-oriented clinical insights.
-
-Specialist referral
-
-Ranks appropriate specialties and provides confidence, reasoning, urgency, and doctor-discussion context.
-
-Personalized care planning
-
-Converts patient context into structured preparation, monitoring, action, and follow-up guidance.
-
-Treatment-response intelligence
-
-Identifies documented improvement, worsening, mixed response, stability, or insufficient evidence.
-
-CarePath Memory
-
-Retains clinically relevant information for continuity across the patient's healthcare journey.
-
-Follow-up intelligence
-
-Identifies unresolved issues, monitoring requirements, and follow-up needs.
-
-AI safety layer
-
-Includes structured validation, confidence handling, prompt-injection protection concepts, PHI redaction, and a strict medication boundary.
-
-<a id="technology-stack"></a>
-
-🧰 Technology Stack
-
-Layer
-
-Technologies
-
-Frontend
-
-React 19, TypeScript, Vite, React Router, Tailwind CSS
-
-User Experience
-
-Motion, Lucide React, interactive architecture views
-
-Backend API
-
-Python, FastAPI, Uvicorn, Pydantic
-
-AI Orchestration
-
-LangGraph, Supervisor + specialized agent architecture
-
-AI / Language
-
-Gemini-compatible model integration, Clinical NLP, Bio-NER
-
-OCR
-
-EasyOCR, Tesseract-compatible OCR pipeline
-
-Computer Vision
-
-PyTorch, TorchVision, NumPy, Pillow
-
-Medical Imaging
-
-DICOM / pydicom-compatible processing
-
-RAG / Retrieval
-
-ChromaDB, embeddings, guideline retrieval
-
-Data Layer
-
-PostgreSQL, Supabase, SQLAlchemy
-
-File Storage
-
-Supabase Storage
-
-Security
-
-JWT, password hashing, PHI redaction, prompt-injection defenses
-
-Testing
-
-Pytest, integration tests, interface tests, AI-service tests
-
-Deployment
-
-Docker, Docker Compose
-
-The CarePath team architecture originally specifies React + Tailwind for the frontend, FastAPI for the backend, PostgreSQL + ChromaDB for data, n8n/LangGraph-style orchestration, Gemini/OpenAI + OCR + Computer Vision for AI, and Docker-based deployment. fileciteturn6file8L971-L977
-
-flowchart LR
-    UI[React CarePath Console] --> API[FastAPI API Gateway]
-    UI --> AGENTS[Multi-Agent Workflow]
-
-    API --> AUTH[Authentication & RBAC]
-    API --> CORE[Core Patient Services]
-    API --> AI[AI Intelligence Layer]
-
-    AGENTS --> SAFETY[Safety Agent]
-    AGENTS --> INTAKE[Intake Agent]
-    AGENTS --> VISION[Vision Agent]
-    AGENTS --> DOCS[Medical Docs Agent]
-    AGENTS --> TIMELINE[Timeline Agent]
-    AGENTS --> EVIDENCE[Evidence Agent]
-    AGENTS --> REASONING[Clinical Reasoning]
-    AGENTS --> REFERRAL[Referral Agent]
-    AGENTS --> CAREPLAN[Care Plan Agent]
-    AGENTS --> FOLLOWUP[Follow-up Agent]
-
-    AI --> OCR[OCR]
-    AI --> NLP[Clinical NLP]
-    AI --> CV[Computer Vision]
-    AI --> RAG[RAG / Embeddings]
-
-    CORE --> PG[(PostgreSQL / Supabase)]
-    CORE --> STORAGE[Supabase Storage]
-    RAG --> CHROMA[(ChromaDB)]
-
-The project is organized into four major operational domains so that the AI, healthcare-navigation, data, and product layers remain modular and maintainable.
-
-<a id="architecture"></a>
-
-🏗️ Architecture & Domain Deep-Dive
-
-🧠 1. Artificial Intelligence (AI) Domain
-
-The AI domain acts as the clinical intelligence layer powering document understanding, medical image analysis, evidence retrieval, structured extraction, and CarePath synthesis.
-
-Feature
-
-Technical Breakdown & Capability
-
-📄 Smart Document Analysis
-
-OCR extracts medical text and downstream services structure prescriptions, laboratory metrics, clinical notes, and document metadata.
-
-🧬 Clinical Bio-NER
-
-Identifies symptoms, medications, diagnoses, anatomy, procedures, and laboratory-related entities, including negation and confidence.
-
-🩻 Medical Computer Vision
-
-Parses standard images/DICOM-compatible inputs and produces structured findings, pathology scores, metadata, and explainability output.
-
-📚 Medical RAG
-
-Uses ChromaDB and an embedding/retrieval layer to retrieve relevant clinical guideline evidence and source information.
-
-🧠 Clinical Synthesis
-
-Combines OCR, NLP, Vision, and RAG outputs into a structured CarePath clinical context.
-
-📊 Clinical Intelligence
-
-Supports confidence scoring, treatment-response classification, referral ranking, follow-up intelligence, and personalized care-plan generation.
-
-The original CarePath AI/ML ownership explicitly covers Computer Vision, NLP, OCR, RAG, treatment-failure detection, referral ranking, confidence scoring, explainable AI, and AI inference APIs. fileciteturn6file6L721-L788
-
-<br>
-
-🤖 2. Multi-Agent Healthcare Navigation Domain
-
-The multi-agent layer transforms individual AI capabilities into an autonomous healthcare-navigation workflow.
-
+---
+
+# ✨ Key Features
+
+| Capability | What it enables |
+| :--- | :--- |
+| **AI-Powered Patient Intake** | Structures symptoms, patient context, history, and encounter information into a format that downstream agents can reason over. |
+| **Smart Document Analyzer** | Processes uploaded medical documents and extracts structured information for use across the patient's healthcare journey. |
+| **Medication Companion** | Extracts medication information from prescriptions, supports patient confirmation, and enables reminder and adherence workflows. |
+| **Evidence-Backed Guidance** | Uses RAG-based evidence retrieval to provide supporting medical context and improve transparency behind AI-generated guidance. |
+| **Explainable Specialist Referral** | Combines symptoms, history, treatment context, reasoning, and evidence to recommend the most appropriate specialist with an explainable rationale. |
+| **CarePath Doctor Bridge** | Creates a doctor-ready patient brief, generates case-specific questions, and supports clinician review and feedback through a human-in-the-loop workflow. |
+| **CarePath Memory** | Maintains relevant patient context across interactions so the system can provide continuity instead of treating every encounter as an isolated conversation. |
+| **AI-Generated Patient Timeline** | Organizes symptoms, consultations, documents, prescriptions, referrals, care plans, and follow-ups into a chronological healthcare journey. |
+| **Personalized Care Plan** | Converts relevant patient context and clinician-provided information into structured next steps, monitoring points, and follow-up guidance. |
+| **Follow-up Intelligence** | Supports post-consultation check-ins, follow-up scheduling, treatment-response tracking, and escalation workflows when additional review is required. |
+| **Safety-First Agent** | Evaluates configured safety signals and can interrupt the normal navigation workflow when a safety condition requires priority handling. |
+| **Multi-Agent Orchestration** | Uses a LangGraph Supervisor to dynamically coordinate specialized agents instead of sending every request through a single monolithic AI workflow. |
+| **Human-in-the-Loop Review** | Allows the workflow to pause for clinician review and resume with clinician-provided information incorporated into the patient context. |
+| **SSE Workflow Streaming** | Streams long-running workflow progress such as agent execution, evidence retrieval, review requests, completion, and failure events to the frontend. |
+| **Structured AI Service Contracts** | Decouples FastAPI and LangGraph from individual AI providers through reusable contracts for document analysis, vision, medication extraction, and evidence retrieval. |
+
+
+---
+
+# 💼 Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 19, TypeScript, Vite, React Router |
+| **User Experience** | Tailwind CSS 4, Lucide React, Recharts, Motion, React Markdown |
+| **Backend API** | Python 3.13, FastAPI, Uvicorn, Pydantic |
+| **Multi-Agent Orchestration** | LangGraph, LangChain Core, Supervisor-based agent routing |
+| **AI & Language** | Google Gemini, structured AI service contracts, medical NLP workflows |
+| **Document Intelligence** | OCR / document-analysis service contracts, EasyOCR integration |
+| **Computer Vision** | PyTorch-based vision workflows and vision service contracts |
+| **Evidence & RAG** | ChromaDB, vector retrieval, Evidence Agent |
+| **Data Layer** | PostgreSQL, SQLAlchemy, AsyncPG, Alembic |
+| **State & Persistence** | CarePath shared state, repository interfaces, LangGraph workflow state |
+| **Real-Time Communication** | Server-Sent Events (SSE) |
+| **Authentication** | JWT-based authentication, password hashing, role-aware access control |
+| **Validation & Configuration** | Pydantic, Pydantic Settings |
+| **Testing** | Pytest, pytest-asyncio, mocked AI service contracts, API and LangGraph tests |
+| **Infrastructure** | Docker, environment-based configuration |
+| **Logging & Observability** | Structured logging with Structlog |
+
+---
+
+# 🏗️ Architecture & Domain Deep-Dive
+
+CarePath AI is organized into four tightly integrated operational domains.
+Each domain owns a distinct responsibility in the patient healthcare journey
+while communicating through well-defined API and service contracts.
+
+> **The frontend presents the journey, the backend coordinates it,
+> LangGraph orchestrates intelligence, and specialized services provide
+> the evidence and context required for each workflow.**
+
+```mermaid
 flowchart TD
-    SUP[Supervisor Agent]
 
-    SUP --> SAFETY[Safety Agent]
-    SUP --> INTAKE[Intake Agent]
-    SUP --> VISION[Vision Agent]
-    SUP --> DOCS[Medical Docs Agent]
-    SUP --> TIMELINE[Timeline Agent]
-    SUP --> EVIDENCE[Evidence Agent]
-    SUP --> REASONING[Clinical Reasoning Agent]
-    SUP --> REFERRAL[Referral Agent]
-    SUP --> CAREPLAN[Care Plan Agent]
-    SUP --> FOLLOWUP[Follow-up Agent]
+    UI["React Patient Experience"]
 
-    SAFETY -->|Safe| INTAKE
-    SAFETY -->|Emergency| EXIT[Emergency / Short Circuit]
+    API["FastAPI API Gateway"]
 
-    INTAKE --> TIMELINE
-    VISION --> TIMELINE
-    DOCS --> TIMELINE
+    AUTH["JWT Authentication & Authorization"]
 
-    TIMELINE --> EVIDENCE
-    EVIDENCE --> REASONING
-    REASONING --> REFERRAL
-    REFERRAL --> CAREPLAN
-    CAREPLAN --> FOLLOWUP
+    ORCH["LangGraph Supervisor<br/>Multi-Agent Orchestration"]
 
-The project architecture defines 11 specialized agents: Supervisor, Intake, Vision, Medical Docs, Timeline, Evidence, Clinical Reasoning, Referral, Safety, Care Plan, and Follow-up. fileciteturn6file8L978-L989
+    AI["AI & Medical Intelligence"]
 
-Agent responsibilities
+    MEMORY["CarePath Memory"]
 
-Agent
+    TIMELINE["Patient Timeline"]
 
-Responsibility
+    EVIDENCE["Evidence / RAG"]
 
-Supervisor Agent
+    DOCTOR["Doctor Bridge"]
 
-Controls routing and decides which agent should execute next.
+    CARE["Personalized Care Plan"]
 
-Safety Agent
+    FOLLOW["Follow-up Intelligence"]
 
-Detects red flags and urgent conditions.
+    MED["Medication Companion"]
 
-Intake Agent
+    DB[("PostgreSQL")]
 
-Processes symptoms and patient information.
+    AI_SERVICES["AI Service Contracts"]
 
-Vision Agent
+    GEMINI["Gemini / LLM"]
+    OCR["OCR / Document Intelligence"]
+    VISION["Computer Vision"]
+    VECTOR[("ChromaDB / Vector Retrieval")]
 
-Analyzes medical images.
+    UI --> API
+    API --> AUTH
+    API --> ORCH
 
-Medical Docs Agent
+    ORCH --> AI
+    ORCH --> MEMORY
+    ORCH --> TIMELINE
+    ORCH --> EVIDENCE
+    ORCH --> DOCTOR
+    ORCH --> CARE
+    ORCH --> FOLLOW
+    ORCH --> MED
 
-Extracts information from reports and prescriptions.
+    AI --> AI_SERVICES
+    AI_SERVICES --> GEMINI
+    AI_SERVICES --> OCR
+    AI_SERVICES --> VISION
+    AI_SERVICES --> VECTOR
 
-Timeline Agent
+    MEMORY --> DB
+    TIMELINE --> DB
+    DOCTOR --> DB
+    CARE --> DB
+    FOLLOW --> DB
+    MED --> DB
 
-Builds the patient's medical journey.
+    API --> UI
+```
+---
 
-Evidence Agent
+## 🤖 1. Artificial Intelligence & Multi-Agent Intelligence Domain
 
-Retrieves relevant medical guidelines through RAG.
+> *The intelligence layer of CarePath AI. It transforms unstructured
+> patient information into structured context, evidence, reasoning,
+> navigation guidance, and actionable healthcare workflows.*
 
-Clinical Reasoning Agent
+| Feature | Technical Breakdown & Capability |
+| :--- | :--- |
+| 🧠 **LangGraph Supervisor** | Acts as the central orchestrator and dynamically determines which specialized agent should execute next. |
+| 🛡️ **Safety Agent** | Performs safety-first evaluation and can interrupt the normal navigation workflow when configured safety conditions require priority handling. |
+| 📥 **Intake Agent** | Structures patient symptoms, encounter information, duration, severity, and relevant context. |
+| 👁️ **Vision Agent** | Provides an abstraction for supported medical-image analysis through the Computer Vision service contract. |
+| 📄 **Medical Documents Agent** | Processes document-analysis and OCR outputs and converts supported medical documents into structured information. |
+| 💊 **Medication Agent** | Extracts medication information from prescription context and prepares structured data for confirmation and reminder workflows. |
+| 📚 **Evidence Agent** | Retrieves relevant evidence through the RAG service contract and preserves source information for explainability. |
+| 🧩 **Clinical Reasoning Agent** | Aggregates relevant patient context, timeline information, document findings, and evidence into structured reasoning. |
+| 🩺 **Referral Agent** | Produces specialist-navigation guidance using available context, reasoning, evidence, confidence, and urgency information. |
+| 📝 **Care Plan Agent** | Organizes relevant information into structured care-plan guidance while separating AI-generated guidance from clinician-provided instructions. |
+| 🔔 **Follow-up Agent** | Coordinates post-consultation check-ins and follow-up workflows. |
+| ⏸️ **Human-in-the-Loop** | Allows workflows such as the Doctor Bridge to pause, receive clinician input, and resume while preserving graph state. |
 
-Combines evidence and patient context into clinical insights.
+### Agent Orchestration
 
-Referral Agent
-
-Recommends and ranks specialists.
-
-Care Plan Agent
-
-Prepares the patient for the next stage of care.
-
-Follow-up Agent
-
-Monitors progress and schedules follow-up intelligence.
-
-🗄️ 3. Data, Memory & Evidence Domain
-
-The data domain preserves structured patient history while separating medical files, relational records, longitudinal memory, and vector evidence.
-
-flowchart LR
-    APP[CarePath Application]
-
-    APP --> CRUD[Domain CRUD Layer]
-    CRUD --> ORM[SQLAlchemy]
-    ORM --> PG[(PostgreSQL / Supabase)]
-
-    APP --> FILES[Storage Service]
-    FILES --> OBJECT[(Supabase Storage)]
-
-    APP --> MEMORY[CarePath Memory]
-    MEMORY --> PG
-
-    AI[AI / Evidence Layer] --> EMB[Embedding Service]
-    EMB --> CHROMA[(ChromaDB)]
-
-Data responsibilities
-
-Layer
-
-Purpose
-
-PostgreSQL / Supabase
-
-Structured users, patients, visits, symptoms, medications, analyses, recommendations, care plans, follow-ups, feedback, timelines, and audit records.
-
-Supabase Storage
-
-Medical reports, prescriptions, images, PDFs, and other uploaded files.
-
-ChromaDB
-
-Vector-based clinical guideline/evidence retrieval.
-
-CarePath Memory
-
-Longitudinal clinical information used across summaries, timelines, treatment response, and follow-up.
-
-Audit / Agent Runs
-
-Traceability for AI and multi-agent execution.
-
-The repository's database design includes a PostgreSQL/Supabase relational layer, Supabase Storage for medical files, ChromaDB for evidence retrieval, and domain-specific CRUD modules.
-
-👤 4. Patient Experience & Continuity Domain
-
-The patient domain turns AI outputs into a continuous healthcare journey instead of a single isolated AI response.
-
-Feature
-
-Technical Breakdown & Capability
-
-📝 Patient Intake
-
-Captures symptoms, duration, severity, and relevant context.
-
-📋 Patient Summary
-
-Consolidates extracted and verified clinical information into a structured overview.
-
-❓ Doctor Questions
-
-Generates case-specific questions for the next consultation.
-
-🧠 CarePath Memory
-
-Retains clinically relevant information for future retrieval.
-
-📅 Patient Timeline
-
-Organizes clinical events chronologically.
-
-📈 Treatment Response
-
-Tracks documented improvement, worsening, mixed response, or insufficient information.
-
-⏰ Follow-up Intelligence
-
-Identifies unresolved issues and future checkpoints.
-
-📋 Personalized Care Plan
-
-Organizes action items, monitoring, appointment preparation, and questions for clinicians.
-
-The original project plan explicitly defines patient dashboard, doctor recommendations, timeline, analytics, medical-report/prescription/image uploads, confidence, evidence, history, charts, progress, and notifications as key product experiences. fileciteturn6file6L661-L720
-
-<br>
-
-<a id="core-modules"></a>
-
-🚀 Core Modules
-
-Module
-
-Technology / Approach
-
-Current Implementation
-
-Planned Evaluation
-
-Smart Document Analyzer
-
-EasyOCR + structured Pydantic schemas
-
-OCR extraction, document type, prescriptions, laboratory metrics, text lines, confidence and processing time.
-
-OCR accuracy, field extraction accuracy, confidence calibration
-
-Clinical NLP / Bio-NER
-
-Pattern-based medical entity extraction + coding maps
-
-Symptoms, medications, diagnoses, anatomy, negation, confidence, ICD-10/SNOMED metadata.
-
-Entity precision/recall, negation accuracy, coding correctness
-
-Medical Vision
-
-PyTorch/TorchVision + image processing
-
-DICOM parsing, metadata extraction, image normalization, pathology scores and explainability output.
-
-Classification quality, robustness, confidence, explainability
-
-Medical RAG
-
-Embeddings + ChromaDB + fallback retrieval
-
-Guideline retrieval, source metadata, relevance scores, synthesized evidence answer.
-
-Precision@K, Recall@K, groundedness, citation correctness
-
-Clinical Extraction
-
-Structured clinical schemas
-
-Consolidates medical information from patient/document inputs.
-
-Field completeness, structured-output validity
-
-Patient Summary
-
-Evidence-aware clinical synthesis
-
-Generates structured patient context and tracks confidence/missing information.
-
-Factual consistency, completeness, hallucination rate
-
-Case Questions
-
-Context-aware generation
-
-Produces prioritized doctor discussion questions from the case.
-
-Relevance, completeness, evidence grounding
-
-Doctor Feedback
-
-Structured interpretation
-
-Preserves doctor-stated information and separates it from AI interpretation.
-
-Provenance accuracy, safety
-
-Treatment Response
-
-Rule/AI-assisted classification
-
-Classifies documented response as improved, worsened, mixed, stable, or insufficient data.
-
-Classification accuracy, evidence grounding
-
-Follow-up Intelligence
-
-Longitudinal analysis
-
-Identifies follow-up needs, unresolved issues and monitoring requirements.
-
-Temporal accuracy, completeness
-
-Personalized Care Plan
-
-Multimodal clinical synthesis
-
-Combines patient context, treatment response, doctor feedback and evidence into structured care guidance.
-
-Groundedness, personalization, safety
-
-CarePath Memory
-
-Patient longitudinal context
-
-Retains relevant information for timeline, summary and follow-up workflows.
-
-Retrieval relevance, memory correctness
-
-AI Safety Evaluation
-
-Regression + adversarial testing
-
-Structured validation, confidence testing, prompt-injection defenses, failure handling and medication boundary tests.
-
-Hallucination rate, safety violations, regression coverage
-
-<a id="key-metrics"></a>
-
-📌 Key Project Metrics
-
-Metric
-
-Value
-
-Specialized AI / Intelligence Engines
-
-13
-
-Multi-Agent Healthcare Agents
-
-11
-
-Database Models
-
-19
-
-Backend Domain Services
-
-12
-
-Architecture Topics
-
-15
-
-Frontend Command Center Areas
-
-6
-
-Latest Reported Pytest Result
-
-82 passed
-
-Reported Test Failures
-
-0
-
-Vector Database
-
-ChromaDB
-
-Relational Database
-
-PostgreSQL / Supabase
-
-Object Storage
-
-Supabase Storage
-
-AI Intelligence Engines
-
-OCR Engine
-
-Clinical NLP / Bio-NER Engine
-
-Clinical Extraction Engine
-
-Vision Engine
-
-Embedding Service
-
-RAG Knowledge Engine
-
-CarePath Synthesis Engine
-
-Patient Summary Engine
-
-Case Question Engine
-
-Doctor Feedback Engine
-
-Treatment Response Engine
-
-Follow-up Intelligence Engine
-
-Personalized Care Plan Engine
-
-Important: metrics such as confidence, risk score, probability, and relevance are system-level AI signals. They are not presented as clinically validated accuracy percentages.
-
-📊 AI Confidence & Prediction Signals
-
-Signal
-
-Typical Representation
-
-Purpose
-
-OCR confidence
-
-0–1
-
-Reliability of extracted document text
-
-Entity confidence
-
-0–1
-
-Reliability of a clinical entity
-
-NLP confidence
-
-0–1
-
-Reliability of clinical extraction
-
-Vision confidence
-
-0–1
-
-Confidence attached to visual findings
-
-RAG relevance
-
-0–1
-
-Relevance of retrieved evidence
-
-Summary confidence
-
-0–1
-
-Confidence in synthesized patient context
-
-Treatment-response confidence
-
-0–1
-
-Confidence in response classification
-
-Follow-up confidence
-
-0–1
-
-Confidence in follow-up insight
-
-Care-plan confidence
-
-0–1
-
-Confidence in care-plan generation
-
-Differential probability
-
-0–1
-
-Structured differential field
-
-Risk score
-
-0–100
-
-Structured risk-prioritization signal
-
-Care-plan completion
-
-%
-
-Completion analytics
-
-Medication adherence
-
-%
-
-Medication-status analytics
-
-Prediction / scoring pipeline
-
-flowchart LR
-    DATA[Patient + Clinical Data] --> FACTS[Structured Clinical Facts]
-
-    FACTS --> OCR[OCR Confidence]
-    FACTS --> NLP[NLP Confidence]
-    FACTS --> VIS[Vision Confidence]
-    FACTS --> RAG[RAG Relevance]
-
-    OCR --> SUMMARY[Patient Summary]
-    NLP --> SUMMARY
-    VIS --> SUMMARY
-
-    RAG --> REASONING[Clinical Reasoning]
-    SUMMARY --> REASONING
-
-    REASONING --> DIFF[Differential Probability]
-    REASONING --> RISK[Risk Score]
-
-    REASONING --> REFERRAL[Referral Ranking]
-    REFERRAL --> CAREPLAN[Personalized Care Plan]
-    CAREPLAN --> FOLLOW[Follow-up Confidence]
-
-The original project architecture specifically identifies confidence estimation, severity estimation, treatment-failure detection, referral ranking, and explainable AI as AI/ML responsibilities. fileciteturn6file6L727-L781
-
-🧪 AI Evaluation Metrics
-
-AI Component
-
-Evaluation Metrics
-
-OCR
-
-Character/word accuracy, field extraction accuracy, confidence calibration
-
-NLP / Bio-NER
-
-Precision, Recall, F1, negation accuracy
-
-Vision
-
-Accuracy, Precision, Recall, F1, AUROC where validated
-
-RAG
-
-Precision@K, Recall@K, MRR, groundedness, citation correctness
-
-Referral Ranking
-
-Top-1/Top-K specialist accuracy, ranking quality
-
-Treatment Response
-
-Classification accuracy, macro F1
-
-Follow-up Intelligence
-
-Recall of required follow-ups, false-positive rate
-
-Care Plan
-
-Groundedness, completeness, human evaluation
-
-Safety
-
-Prompt-injection success rate, hallucination rate, unsafe-action rate
-
-No unmeasured benchmark values are claimed here; these are the evaluation targets defined for the platform.
-
-<a id="database"></a>
-
-🗄️ Database Architecture
-
-CarePath AI uses a hybrid storage architecture:
-
-                 CAREPATH APPLICATION
-                         │
-          ┌──────────────┼──────────────┐
-          │              │              │
-          ▼              ▼              ▼
-     PostgreSQL     Supabase Storage  ChromaDB
-          │              │              │
-   Structured Data    Medical Files   Evidence
-          │              │              │
-          ├──── Patient │              │
-          ├──── Visits  ├── PDFs       ├── Embeddings
-          ├──── Symptoms├── Reports    ├── Guidelines
-          ├──── Meds    ├── Images     └── Retrieval
-          ├──── AI      └── X-rays
-          ├──── Plans
-          ├──── Timeline
-          └──── Audit
-
-Core relational domains
-
-Users
-Patients
-Family Members
-
-Visits
-Symptom Sessions
-Patient Symptoms
-Medications
-Medical Files
-
-AI Analyses
-Recommendations
-Care Plans
-Follow-ups
-
-Feedback
-Notifications
-
-Prompt Templates
-Audit History
-Agent Runs
-
-Timeline Events
-Evidence Retrieval
-
-Database design principles
-
-PostgreSQL for structured healthcare/application data.
-
-Supabase Storage for medical files.
-
-ChromaDB for vectorized clinical evidence.
-
-SQLAlchemy for domain persistence.
-
-Separate CRUD modules by domain.
-
-Audit history for traceability.
-
-Agent runs for workflow observability.
-
-🗂️ Database Relationship Overview
-
-erDiagram
-
-    USER ||--|| PATIENT_PROFILE : owns
-    USER ||--o{ FAMILY_MEMBER : manages
-
-    USER ||--o{ VISIT : has
-    USER ||--o{ SYMPTOM_SESSION : starts
-    SYMPTOM_SESSION ||--o{ PATIENT_SYMPTOM : contains
-    USER ||--o{ MEDICATION : uses
-    USER ||--o{ MEDICAL_FILE : uploads
-
-    USER ||--o{ AI_ANALYSIS : receives
-    AI_ANALYSIS ||--o{ RECOMMENDATION : generates
-    AI_ANALYSIS ||--o{ CARE_PLAN : generates
-    CARE_PLAN ||--o{ FOLLOW_UP : schedules
-
-    USER ||--o{ FEEDBACK : submits
-    USER ||--o{ NOTIFICATION : receives
-
-    USER ||--o{ AGENT_RUN : executes
-    USER ||--o{ AUDIT_HISTORY : generates
-    USER ||--o{ TIMELINE_EVENT : accumulates
-    USER ||--o{ EVIDENCE_RETRIEVAL : retrieves
-
-<a id="security"></a>
-
-🛡️ Security, PHI & Medical Safety
-
-Authentication
-
-The architecture includes:
-
-JWT authentication
-
-password hashing
-
-token validation
-
-role information
-
-token expiration
-
-protected backend routes
-
-PHI protection
-
-The security sandbox covers common PHI patterns such as:
-
-SSN
-Phone
-Email
-MRN
-Date of Birth
-
-Prompt-injection defense
-
-Medical documents and patient text are treated as untrusted data, not system instructions.
-
-flowchart LR
-    INPUT[Patient / Document Input]
-    INPUT --> VALIDATE[Validation]
-    VALIDATE --> PHI[PHI Redaction]
-    PHI --> INJECTION[Prompt Injection Defense]
-    INJECTION --> AI[AI / Agent]
-    AI --> STRUCT[Structured Output Validation]
-    STRUCT --> REVIEW[Human Review]
-
-Medication safety boundary
-
-CarePath follows:
-
-Prescription
-      ↓
-AI extracts
-      ↓
-Patient verifies
-      ↓
-Schedule / Reminder
-
-Not:
-
-Symptoms
-   ↓
-AI
-   ↓
-AI independently prescribes medication
-
-The project architecture explicitly states that CarePath is intended to guide patients rather than replace doctors or diagnose diseases autonomously. fileciteturn6file4L470-L478
-
-<a id="getting-started"></a>
-
-🚀 Getting Started
-
-Prerequisites
-
-Node.js
-
-Python 3.10+
-
-Git
-
-npm
-
-PostgreSQL/Supabase for the full data layer
-
-ChromaDB for local vector retrieval
-
-Optional AI provider credentials
-
-Optional Tesseract installation for the OCR fallback
-
-1. Repository & Environment Setup
-
-git clone <your-repository-url>
-cd CarePath-AI
-
-Create the environment files from the supplied templates where applicable.
-
-cp .env.example .env
-
-Configure the required credentials such as:
-
-GEMINI_API_KEY
-DATABASE_URL
-SUPABASE_URL
-SUPABASE_KEY
-JWT_SECRET / SECRET_KEY
-PHI_SALT
-
-Never commit real credentials, API keys, passwords, or PHI.
-
-2. Backend Initialization (FastAPI)
-
-Create and activate the Python environment:
-
-python -m venv .venv
-
-Windows:
-
-.venv\Scripts\activate
-
-macOS / Linux:
-
-source .venv/bin/activate
-
-Install dependencies:
-
-pip install -r requirements.txt
-
-Start the AI/API service:
-
-uvicorn app.main:app --reload
-
-The API documentation will be available at:
-
-http://localhost:8000/docs
-
-3. Frontend Initialization (React / Vite)
-
-Open a second terminal:
-
-npm install
-npm run dev
-
-The Vite development server will display the frontend URL in the terminal.
-
-4. Testing
-
-PYTHONPATH=. pytest -q
-
-Windows PowerShell:
-
-$env:PYTHONPATH="."
-pytest -q
-
-<a id="how-to-use"></a>
-
-📖 How to Use (Quick Workflow)
-
-Open CarePath AI: Start from the patient-facing dashboard or architecture command center.
-
-Start a care session: Enter the patient's symptoms, duration, severity, and relevant context.
-
-Upload medical records: Add prescriptions, laboratory reports, clinical notes, or supported medical images.
-
-Run AI processing: The system can route information through Intake, Vision, Medical Docs, Timeline, and Evidence agents according to available inputs.
-
-Review extracted information: Inspect structured symptoms, medications, diagnoses, document fields, image findings, confidence values, and evidence.
-
-Build clinical context: Timeline and memory organize information across the patient journey.
-
-Review evidence: RAG retrieves relevant medical guidelines and source information.
-
-Generate navigation: Clinical Reasoning and Referral produce specialist-oriented navigation, urgency, reasoning, and questions.
-
-Prepare for care: Care Plan organizes patient preparation, monitoring, action items, and doctor questions.
-
-Continue the journey: Follow-up Intelligence and CarePath Memory preserve continuity for future interactions.
-
+```mermaid
 flowchart TD
-    A[Login / Open CarePath] --> B[Dashboard]
-    B --> C[Start Patient Care Session]
 
-    C --> D[Enter Symptoms]
-    D --> E{Medical Files?}
+    START["Patient Request / Encounter"]
+
+    START --> SUP["Supervisor Agent"]
+
+    SUP --> SAFETY["Safety Agent"]
+
+    SAFETY -->|Safe to continue| ROUTER{"Required capability?"}
+
+    ROUTER --> INTAKE["Intake Agent"]
+    ROUTER --> DOCS["Medical Documents Agent"]
+    ROUTER --> VISION["Vision Agent"]
+    ROUTER --> MED["Medication Agent"]
+    ROUTER --> MEMORY["CarePath Memory"]
+    ROUTER --> TIMELINE["Timeline Agent"]
+    ROUTER --> EVIDENCE["Evidence Agent"]
+    ROUTER --> REASONING["Clinical Reasoning"]
+    ROUTER --> REFERRAL["Referral Agent"]
+    ROUTER --> DOCTOR["Doctor Bridge"]
+    ROUTER --> CARE["Care Plan Agent"]
+    ROUTER --> FOLLOW["Follow-up Agent"]
+
+    SAFETY -->|Safety condition| INTERRUPT["Safety-First Response"]
+
+    INTAKE --> SUP
+    DOCS --> SUP
+    VISION --> SUP
+    MED --> SUP
+    MEMORY --> SUP
+    TIMELINE --> SUP
+    EVIDENCE --> SUP
+    REASONING --> SUP
+    REFERRAL --> SUP
+    DOCTOR --> SUP
+    CARE --> SUP
+    FOLLOW --> SUP
+
+    SUP --> END["Structured Response"]
+    INTERRUPT --> END
+```
 
-    E -->|Image| F[Vision Agent]
-    E -->|Document| G[Medical Docs Agent]
-    E -->|No| H[Intake + Timeline]
 
-    F --> H
-    G --> H
-
-    H --> I[Evidence / RAG]
-    I --> J[Clinical Reasoning]
-    J --> K[Specialist Referral]
-    K --> L[Care Plan]
-    L --> M[Follow-up Intelligence]
-    M --> N[CarePath Memory]
-    N --> O[Next Care Interaction]
-
-🧭 How the Supervisor Works
-
-The Supervisor is the most important orchestration component.
-
-It decides:
-
-If an image exists → run Vision.
-
-If a medical document exists → run Medical Docs.
-
-If symptoms trigger a safety concern → prioritize Safety.
-
-If a required artifact is missing → skip unnecessary agents.
-
-Wait for required outputs.
-
-Merge the results.
-
-Send the structured context to Clinical Reasoning.
-
-Continue to Referral, Care Plan, and Follow-up.
-
-This is what makes the platform dynamic rather than a fixed pipeline. The original CarePath workflow describes the Supervisor as deciding which agents run based on available inputs and patient conditions. fileciteturn6file9L1190-L1204
-
-🔍 Example Agent Flow
-
-Vision Agent
-
-Supervisor
-    ↓
-Uploaded Image
-    ↓
-Vision Processing
-    ↓
-Finding Extraction
-    ↓
-Confidence + Metadata
-    ↓
-Structured JSON
-
-Medical Docs Agent
-
-Supervisor
-    ↓
-PDF / Prescription
-    ↓
-OCR
-    ↓
-Clinical NLP
-    ↓
-Medications / Diagnoses / Labs
-    ↓
-Structured JSON
-
-Evidence Agent
-
-Clinical Question
-      ↓
-Embedding
-      ↓
-ChromaDB
-      ↓
-Top-K Evidence
-      ↓
-Source Metadata
-      ↓
-Evidence Summary
-
-Referral Agent
-
-Symptoms
-+
-Timeline
-+
-Vision
-+
-Documents
-+
-Evidence
-      ↓
-Referral Ranking
-      ↓
-Specialty
-+
-Confidence
-+
-Reasoning
-+
-Urgency
-+
-Doctor Questions
-
-The original architecture describes these agent-level workflows and their structured outputs in the CarePath design. fileciteturn6file9L1151-L1189
-
-🧪 Testing & Verification
-
-Latest reported development result
-
-82 passed
-0 failed
-
-The test suite covers:
-
-domain models
-
-integration
-
-service interfaces
-
-main API
-
-NLP
-
-OCR
-
-RAG
-
-validation
-
-Vision
-
-database functionality
-
-AI evaluation framework
-
-flowchart TD
-    TEST[CarePath AI Evaluation]
-
-    TEST --> OCR[OCR Accuracy]
-    TEST --> NLP[NLP Entity Extraction]
-    TEST --> VISION[Vision Evaluation]
-    TEST --> RAG[RAG Retrieval]
-    TEST --> HALL[Hallucination Checks]
-    TEST --> STRUCT[Structured Output Validation]
-    TEST --> CONF[Confidence Testing]
-    TEST --> INJECT[Prompt Injection]
-    TEST --> MED[Medication Safety]
-    TEST --> FAIL[AI Failure Scenarios]
-
-🌟 What Makes CarePath AI Different?
-
-One connected healthcare workflow: It connects symptoms, documents, images, evidence, referral, care planning, memory, and follow-up instead of treating each AI task as an isolated chatbot request.
-
-Built for healthcare navigation: The system focuses on helping patients reach the right specialist and prepare for care rather than positioning itself as an autonomous doctor.
-
-Multimodal clinical intelligence: Text, medical documents, images, structured records, and clinical evidence can contribute to one patient context.
-
-Continuity, not just one-time answers: Timeline, CarePath Memory, treatment response, and follow-up intelligence are designed around the patient's journey over time.
-
-Evidence-aware AI: RAG provides a dedicated evidence retrieval layer with source information.
-
-Human-in-the-loop healthcare: AI-derived information is intended for review rather than unquestioned automation.
-
-Strict medication boundary: The system extracts and organizes prescription information but does not independently prescribe or modify medication.
-
-Modular agent architecture: Each major healthcare-navigation responsibility maps to a specialized agent, keeping the system easier to reason about and integrate.
-
-🛣️ Development Roadmap
-
-The original CarePath project plan uses four major sprint stages:
-
-Sprint 0 — Planning
-
-Problem validation
-
-Literature review
-
-Competitor analysis
-
-Architecture
-
-GitHub setup
-
-Technology stack
-
-API contracts
-
-Folder structure
-
-Sprint 1 — Foundation
-
-Database
-
-Storage
-
-Backend
-
-Authentication
-
-Baseline AI
-
-Frontend skeleton
-
-Sprint 2 — Core Workflow
-
-Goal: Complete end-to-end patient journey
-
-Patient Upload
-      ↓
-Backend
-      ↓
-AI Agents
-      ↓
-Recommendation
-      ↓
-Frontend Display
-
-Sprint 3 — Innovation
-
-Examples from the CarePath plan:
-
-Medical Knowledge Graph
-
-Patient Timeline Database
-
-Dynamic Supervisor Agent
-
-Event-driven orchestration
-
-WebSockets
-
-Voice Assistant UI
-
-Interactive Medical Timeline
-
-Treatment Failure Detection
-
-Personalized Care Recommendations
-
-Explainable AI with evidence citations
-
-Sprint 4 — Final Integration
-
-Bug fixing
-
-Integration
-
-Testing
-
-Deployment
-
-README
-
-Architecture diagram
-
-Demo video
-
-Pitch deck
-
-Presentation
-
-Mock judging
-
-The sprint structure and innovation items come directly from the project's earlier CarePath development plan. fileciteturn6file6L789-L887
-
-📦 Repository Ownership / Architecture
-
-carepath-ai/
-│
-├── frontend/              → Frontend & UX
-├── backend/               → Backend + Agent Orchestration
-├── database/              → Database & Storage
-│
-├── app/                   → AI Intelligence Layer
-│   ├── vision/            → Computer Vision
-│   ├── nlp/               → Clinical NLP
-│   ├── rag/               → RAG / Evidence
-│   ├── ocr/               → OCR
-│   └── evaluation/        → AI Evaluation
-│
-├── deployment/            → Infrastructure
-├── docs/                  → Architecture & Documentation
-├── tests/                 → Testing
-└── pitch/                 → Demo & Presentation
-
-The original team plan assigns the AI intelligence layer to Computer Vision, NLP, RAG, OCR, evaluation, and AI inference APIs, while the backend, frontend, database, and infrastructure are separate ownership areas. fileciteturn6file6L888-L921
-
-⚠️ Medical & Technical Disclaimer
-
-CarePath AI is a software/AI research and development project for healthcare navigation and clinical decision support.
-
-It is not a replacement for a qualified healthcare professional.
-
-The current repository should not be interpreted as demonstrating:
-
-regulatory approval
-
-clinical diagnostic validation
-
-autonomous prescribing
-
-clinical-grade risk prediction
-
-HIPAA certification
-
-prospective clinical validation
-
-external model validation
-
-Confidence, probability, risk, relevance, and pathology scores are software-level AI signals unless separately validated on appropriate clinical datasets.
-
-<div align="center">
-
-🩺 CarePath AI
-
-From symptoms to the right care pathway.
-
-Understand → Structure → Retrieve Evidence → Reason → Refer → Plan → Follow Up
-
-<br/>
-
-Built with React • FastAPI • LangGraph • Python • ChromaDB • PostgreSQL • PyTorch
-
-</div>
