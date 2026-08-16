@@ -89,23 +89,23 @@ Continuous Care
 
 | Capability | What it enables |
 | :--- | :--- |
-| **AI-Powered Patient Intake** | Structures symptoms, patient context, history, and encounter information into a format that downstream agents can reason over. |
-| **Smart Document Analyzer** | Processes uploaded medical documents and extracts structured information for use across the patient's healthcare journey. |
-| **Medication Companion** | Extracts medication information from prescriptions, supports patient confirmation, and enables reminder and adherence workflows. |
-| **Evidence-Backed Guidance** | Uses RAG-based evidence retrieval to provide supporting medical context and improve transparency behind AI-generated guidance. |
-| **Explainable Specialist Referral** | Combines symptoms, history, treatment context, reasoning, and evidence to recommend the most appropriate specialist with an explainable rationale. |
-| **CarePath Doctor Bridge** | Creates a doctor-ready patient brief, generates case-specific questions, and supports clinician review and feedback through a human-in-the-loop workflow. |
-| **CarePath Memory** | Maintains relevant patient context across interactions so the system can provide continuity instead of treating every encounter as an isolated conversation. |
-| **AI-Generated Patient Timeline** | Organizes symptoms, consultations, documents, prescriptions, referrals, care plans, and follow-ups into a chronological healthcare journey. |
-| **Personalized Care Plan** | Converts relevant patient context and clinician-provided information into structured next steps, monitoring points, and follow-up guidance. |
-| **Follow-up Intelligence** | Supports post-consultation check-ins, follow-up scheduling, treatment-response tracking, and escalation workflows when additional review is required. |
-| **Safety-First Agent** | Evaluates configured safety signals and can interrupt the normal navigation workflow when a safety condition requires priority handling. |
-| **Multi-Agent Orchestration** | Uses a LangGraph Supervisor to dynamically coordinate specialized agents instead of sending every request through a single monolithic AI workflow. |
-| **Human-in-the-Loop Review** | Allows the workflow to pause for clinician review and resume with clinician-provided information incorporated into the patient context. |
-| **SSE Workflow Streaming** | Streams long-running workflow progress such as agent execution, evidence retrieval, review requests, completion, and failure events to the frontend. |
-| **Structured AI Service Contracts** | Decouples FastAPI and LangGraph from individual AI providers through reusable contracts for document analysis, vision, medication extraction, and evidence retrieval. |
+| 🧠 **AI-Powered Patient Intake** | Structures symptoms, patient context, history, and encounter information for downstream AI workflows. |
+| 📄 **Smart Document Analyzer** | Extracts structured information from uploaded medical reports, prescriptions, and supported documents. |
+| 💊 **Medication Companion** | Extracts prescribed medication information, supports patient confirmation, and enables reminders and adherence tracking. |
+| 📚 **Evidence-Backed Guidance** | Uses RAG-based retrieval to provide supporting medical evidence and improve transparency. |
+| 🩺 **Explainable Specialist Referral** | Combines symptoms, history, reasoning, and evidence to provide transparent specialist-navigation guidance. |
+| 👨‍⚕️ **CarePath Doctor Bridge** | Creates a doctor-ready patient brief, generates case-specific questions, and enables clinician review. |
+| 🧠 **CarePath Memory** | Retains relevant patient context across interactions to provide continuity of care. |
+| 🕐 **AI-Generated Patient Timeline** | Organizes symptoms, consultations, documents, prescriptions, referrals, care plans, and follow-ups chronologically. |
+| 📝 **Personalized Care Plan** | Converts relevant patient context and clinician-provided information into structured next steps and monitoring guidance. |
+| 🔔 **Follow-up Intelligence** | Supports post-consultation check-ins, follow-up scheduling, treatment-response tracking, and escalation workflows. |
+| 🛡️ **Safety-First Agent** | Identifies configured safety signals and can interrupt the normal navigation workflow when priority handling is required. |
+| 🤖 **Multi-Agent Orchestration** | Uses LangGraph to dynamically coordinate specialized healthcare agents through shared state and conditional routing. |
+| 🤝 **Human-in-the-Loop Review** | Allows workflows to pause for clinician review and resume with clinician-provided information incorporated into the patient context. |
+| 📡 **SSE Workflow Streaming** | Streams agent execution, evidence retrieval, review requests, completion, and failure events to the frontend. |
+| 🔗 **Structured AI Service Contracts** | Decouples the backend and LangGraph orchestration layer from individual AI providers through reusable service interfaces. |
 
-
+---
 ---
 
 # 💼 Technology Stack
@@ -115,21 +115,18 @@ Continuous Care
 | **Frontend** | React 19, TypeScript, Vite, React Router |
 | **User Experience** | Tailwind CSS 4, Lucide React, Recharts, Motion, React Markdown |
 | **Backend API** | Python 3.13, FastAPI, Uvicorn, Pydantic |
-| **Multi-Agent Orchestration** | LangGraph, LangChain Core, Supervisor-based agent routing |
+| **Multi-Agent Orchestration** | LangGraph, LangChain Core |
 | **AI & Language** | Google Gemini, structured AI service contracts, medical NLP workflows |
-| **Document Intelligence** | OCR / document-analysis service contracts, EasyOCR integration |
+| **Document Intelligence** | OCR and document-analysis service contracts, EasyOCR |
 | **Computer Vision** | PyTorch-based vision workflows and vision service contracts |
 | **Evidence & RAG** | ChromaDB, vector retrieval, Evidence Agent |
 | **Data Layer** | PostgreSQL, SQLAlchemy, AsyncPG, Alembic |
-| **State & Persistence** | CarePath shared state, repository interfaces, LangGraph workflow state |
 | **Real-Time Communication** | Server-Sent Events (SSE) |
-| **Authentication** | JWT-based authentication, password hashing, role-aware access control |
+| **Authentication & Security** | JWT-based authentication, password hashing, authorization controls |
 | **Validation & Configuration** | Pydantic, Pydantic Settings |
-| **Testing** | Pytest, pytest-asyncio, mocked AI service contracts, API and LangGraph tests |
+| **Testing** | Pytest, pytest-asyncio |
 | **Infrastructure** | Docker, environment-based configuration |
-| **Logging & Observability** | Structured logging with Structlog |
-
----
+| **Logging & Observability** | Structlog |
 
 # 🏗️ Architecture & Domain Deep-Dive
 
