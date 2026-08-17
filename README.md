@@ -266,7 +266,7 @@ Update Shared State
 Re-evaluate
         ↓
 Continue / Interrupt / Complete
-
+```
 > **Unlike a fixed sequential pipeline, CarePath AI uses a shared state and conditional agent routing. The LangGraph Supervisor determines which capabilities are required for the current patient context and coordinates the appropriate agents.**
 
 ---
@@ -374,7 +374,8 @@ Medication + Follow-up
 Updated Patient Context
 ```
 ---
-```
+
+
 ## 🎨 3. Frontend & Patient Experience Domain
 
 > *The patient-facing experience layer of CarePath AI. It transforms complex AI workflows and clinical information into a clear, accessible, and actionable healthcare journey.*
