@@ -1,12 +1,39 @@
-# 🩺 CarePath AI
-
 <p align="center">
   <img src="images/logo.png" alt="CarePath AI Logo" width="180">
 </p>
 
-## Autonomous Healthcare Navigation System
+<h1 align="center">CarePath AI</h1>
 
-> Right Guidance. Right Specialist. Right Time.
+<h3 align="center">Autonomous Healthcare Navigation System</h3>
+
+<p align="center"><em>Right Guidance. Right Specialist. Right Time.</em></p>
+
+<hr>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-149eca?style=flat&logo=react&logoColor=white" alt="React 19">
+  <img src="https://img.shields.io/badge/FastAPI-0.110-009485?style=flat&logo=fastapi&logoColor=white" alt="FastAPI 0.110">
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-336791?style=flat&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/LangGraph-Multi--Agent-1c3c3c?style=flat" alt="LangGraph">
+  <img src="https://img.shields.io/badge/Google_Gemini-AI-4285F4?style=flat&logo=googlegemini&logoColor=white" alt="Google Gemini AI">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?style=flat&logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+</p>
+
+<p align="center">
+  <a href="#overview">Overview</a> ·
+  <a href="#key-features">Key Features</a> ·
+  <a href="#technology-stack">Tech Stack</a> ·
+  <a href="#architecture">Architecture</a> ·
+  <a href="#core-modules">Core Module</a> ·
+  <a href="#key-project-metrics">Key Project Metrics</a> ·
+  <a href="#getting-started">Getting Started</a> ·
+  <a href="#live-demo">Live Demo</a>
+</p>
+
+---
+
+<a id="overview"></a>
+## 📖 Overview
 
 CarePath AI is an intelligent healthcare navigation platform designed to reduce diagnostic delays and help patients reach the most appropriate specialist faster. Instead of replacing doctors, CarePath AI acts as a healthcare navigation companion that analyzes symptoms, medical records, diagnostic reports, and treatment history to guide patients through their healthcare journey.
 
@@ -61,6 +88,9 @@ CarePath AI brings all healthcare information together and transforms it into ac
 
 ---
 
+
+<a id="key-features"></a>
+
 # ✨ Key Features
 
 | Capability | What it enables |
@@ -82,6 +112,34 @@ CarePath AI brings all healthcare information together and transforms it into ac
 | 🔗 **Structured AI Service Contracts** | Decouples the backend and LangGraph orchestration layer from individual AI providers and model implementations. |
 
 ---
+
+<a id="technology-stack"></a>
+
+# 💼 Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 19, TypeScript, Vite, React Router |
+| **UI & Visualization** | Tailwind CSS 4, Lucide React, Recharts, Motion, React Markdown |
+| **Backend API** | Python 3.13, FastAPI, Uvicorn, Pydantic |
+| **Multi-Agent Orchestration** | LangGraph, LangChain Core |
+| **AI & Language** | Google Gemini, structured AI service contracts, medical NLP workflows |
+| **Document Intelligence** | EasyOCR, OCR service contracts, document parsing |
+| **Computer Vision** | PyTorch, vision service contracts |
+| **Evidence & RAG** | ChromaDB, vector retrieval, Evidence Agent |
+| **Data Layer** | PostgreSQL, SQLAlchemy, AsyncPG, Alembic |
+| **Workflow Communication** | Server-Sent Events (SSE), REST APIs |
+| **Authentication & Security** | JWT, password hashing, authorization controls |
+| **Validation & Configuration** | Pydantic, Pydantic Settings |
+| **Testing** | Pytest, pytest-asyncio, API tests, LangGraph workflow tests |
+| **Infrastructure** | Docker, environment-based configuration |
+| **Logging & Observability** | Structlog |
+
+---
+
+
+<a id="architecture"></a>
+
 ## 🏗️ Architecture Overview
 
 CarePath AI is organized into four tightly integrated domains that work
@@ -94,55 +152,55 @@ well-defined API, service, and orchestration contracts.
 > the system, LangGraph orchestrates intelligence, and specialized AI
 > services provide the context and evidence required for each workflow.**
 
+
 ## 🏛️ System Architecture
 
 ```mermaid
 flowchart TD
 
-    PATIENT(["👤 Patient"])
+ PATIENT(["Patient"])
 
-    UI["🎨 React Patient Experience"]
+ UI["React Patient Experience"]
 
-    API["⚡ FastAPI API Layer"]
+ API["FastAPI API Layer"]
 
-    AUTH["🔐 Authentication & Authorization"]
+ AUTH["Authentication & Authorization"]
 
-    SUP["🤖 LangGraph Supervisor"]
+ SUP["LangGraph Supervisor"]
 
-    STATE[["🧠 CarePath State<br/>Shared Patient Context"]]
+ STATE[["CarePath State - Shared Patient Context"]]
 
-    AGENTS["🧩 Specialized AI Agents"]
+ AGENTS["Specialized AI Agents"]
 
-    SERVICES["🔗 AI Service Contracts"]
+ SERVICES["AI Service Contracts"]
 
-    GEMINI["✨ Gemini / LLM"]
-    OCR["📄 OCR / Document Intelligence"]
-    VISION["👁️ Computer Vision"]
-    RAG["📚 Evidence / RAG"]
+ GEMINI["Gemini / LLM"]
+ OCR["OCR / Document Intelligence"]
+ VISION["Computer Vision"]
+ RAG["Evidence / RAG"]
 
-    DB[("🗄️ PostgreSQL")]
+ DB[("PostgreSQL")]
 
-    PATIENT --> UI
-    UI --> API
-    API --> AUTH
-    AUTH --> SUP
+ PATIENT --> UI
+ UI --> API
+ API --> AUTH
+ AUTH --> SUP
 
-    SUP <--> STATE
-    SUP --> AGENTS
+ SUP --> STATE
+ SUP --> AGENTS
 
-    AGENTS --> SERVICES
+ AGENTS --> SERVICES
 
-    SERVICES --> GEMINI
-    SERVICES --> OCR
-    SERVICES --> VISION
-    SERVICES --> RAG
+ SERVICES --> GEMINI
+ SERVICES --> OCR
+ SERVICES --> VISION
+ SERVICES --> RAG
 
-    STATE --> DB
+ STATE --> DB
 
-    SUP --> DB
+ SUP --> DB
 
-    SUP --> API
-    API --> UI
+ SUP --> API
 ```
 The architecture separates presentation, API orchestration, agent
 intelligence, AI capabilities, and persistent patient data into
@@ -150,6 +208,7 @@ independent layers. This allows individual components to evolve without
 coupling the entire healthcare workflow to a single model or service.
 
 ---
+
 
 ## 🤖 1. AI & Multi-Agent Intelligence Domain
 
@@ -173,78 +232,68 @@ coupling the entire healthcare workflow to a single model or service.
 | 🔔 **Follow-up Agent** | Coordinates follow-up workflows, monitoring, reminders, and escalation paths. |
 | 🤝 **Human-in-the-Loop** | Allows an AI workflow to pause for clinician review and resume with expert feedback incorporated into the shared state. |
 
-### 🔄 AI Agent Workflow
+### 🔄 LangGraph Workflow
 
 ```mermaid
 flowchart TD
+    REQUEST["Patient Request"]
+    SUPERVISOR["LangGraph Supervisor"]
+    STATE[["CarePath State"]]
+    ROUTE{"Route Required Capability?"}
+    AGENT["Selected Specialized Agent"]
+    UPDATE["Update Shared State"]
+    REVIEW{"Human Review Required?"}
+    CONTINUE["Continue Workflow"]
+    OUTPUT["Structured Patient Result"]
 
-    INPUT(["👤 Patient Request"])
+    REQUEST --> SUPERVISOR
+    SUPERVISOR --> STATE
+    STATE --> ROUTE
+    ROUTE --> AGENT
+    AGENT --> UPDATE
+    UPDATE --> STATE
+    STATE --> REVIEW
+    REVIEW -->|Yes| OUTPUT
+    REVIEW -->|No| CONTINUE
+    CONTINUE --> SUPERVISOR
+    OUTPUT --> STATE
+```
 
-    SUP["🤖 LangGraph Supervisor"]
+### 🤖 AI Agent Workflow
 
-    STATE[["🧠 CarePath State"]]
+```mermaid
+flowchart LR
+    INPUT["Patient Context"]
+    INTAKE["Intake Agent"]
+    RECORDS["Medical Records Agent"]
+    VISION["Vision Agent"]
+    REASONING["Clinical Reasoning Agent"]
+    EVIDENCE["Evidence Agent"]
+    SAFETY["Safety Agent"]
+    REFERRAL["Referral Agent"]
+    DOCTOR["Doctor Bridge"]
+    CARE["Care Plan Agent"]
+    MEDICATION["Medication Agent"]
+    FOLLOWUP["Follow-up Agent"]
+    RESULT["Patient-Facing Result"]
 
-    SAFETY["🛡️ Safety Agent"]
+    INPUT --> INTAKE
+    INPUT --> RECORDS
+    INPUT --> VISION
+    INPUT --> SAFETY
 
-    INTAKE["📥 Intake Agent"]
-    RECORDS["📄 Medical Records Agent"]
-    VISION["👁️ Vision Agent"]
-    TIMELINE["🕐 Timeline Agent"]
+    INTAKE --> REASONING
+    RECORDS --> REASONING
+    VISION --> REASONING
+    SAFETY --> REASONING
 
-    REASONING["🧩 Clinical Reasoning"]
-
-    EVIDENCE["📚 Evidence Agent"]
-
-    REFERRAL["🩺 Referral Agent"]
-
-    DOCTOR["👨‍⚕️ Doctor Bridge"]
-
-    REVIEW{"👨‍⚕️ Human Review?"}
-
-    CARE["📝 Care Plan"]
-
-    MED["💊 Medication"]
-
-    FOLLOW["🔔 Follow-up"]
-
-    OUTPUT(["📊 Patient Dashboard"])
-
-    INPUT --> SUP
-    SUP <--> STATE
-
-    SUP --> SAFETY
-
-    SAFETY -->|Continue| INTAKE
-    SAFETY -->|Priority| OUTPUT
-
-    SUP --> RECORDS
-    SUP --> VISION
-    SUP --> TIMELINE
-
-    INTAKE --> STATE
-    RECORDS --> STATE
-    VISION --> STATE
-    TIMELINE --> STATE
-
-    STATE --> REASONING
     REASONING --> EVIDENCE
-    EVIDENCE --> REASONING
-
-    REASONING --> REFERRAL
+    EVIDENCE --> REFERRAL
     REFERRAL --> DOCTOR
-
-    DOCTOR --> REVIEW
-
-    REVIEW -->|Review Required| DOCTOR
-    REVIEW -->|Continue| CARE
-
-    CARE --> MED
-    MED --> FOLLOW
-
-    FOLLOW --> STATE
-
-    STATE --> OUTPUT
-
+    DOCTOR --> CARE
+    CARE --> MEDICATION
+    MEDICATION --> FOLLOWUP
+    FOLLOWUP --> RESULT
 ```
 ### Design Principle
 
@@ -271,10 +320,11 @@ Continue / Interrupt / Complete
 
 ---
 
+
 ## 🧠 2. Patient & Clinical Intelligence Domain
 
 > *The continuity layer of CarePath AI. It transforms fragmented healthcare information into persistent patient context, chronological history, evidence-backed guidance, doctor-ready information, and personalized next steps.*
- 
+
 | Feature | Technical Breakdown & Capability |
 | :--- | :--- |
 | 🧠 **CarePath Memory** | Retains relevant patient context across interactions so subsequent workflows can use previously available information instead of starting from zero. |
@@ -287,63 +337,35 @@ Continue / Interrupt / Complete
 | 💊 **Medication Companion** | Extracts medication information from supported prescriptions and connects confirmed medication details with reminder and adherence workflows. |
 | 🔔 **Follow-up Intelligence** | Extends the healthcare journey beyond the initial consultation through check-ins, follow-up scheduling, treatment-response tracking, and escalation workflows. |
 
-### 🔄 Patient Continuity Architecture
+### 🔄 Patient Continuity
 
 ```mermaid
 flowchart TD
-
-    INPUT["📥 Patient Information"]
-
-    MEMORY["🧠 CarePath Memory"]
-
-    DOCS["📄 Smart Document Analyzer"]
-
-    TIMELINE["🕐 AI Patient Timeline"]
-
-    EVIDENCE["📚 Evidence / RAG"]
-
-    REFERRAL["🩺 Explainable Referral Card"]
-
-    DOCTOR["👨‍⚕️ CarePath Doctor Bridge"]
-
-    REVIEW["👨‍⚕️ Expert Review"]
-
-    CARE["📝 Personalized Care Plan"]
-
-    MED["💊 Medication Companion"]
-
-    FOLLOW["🔔 Follow-up Intelligence"]
-
-    CONTEXT[["🧠 Unified Patient Context"]]
+    INPUT["New Patient Information"]
+    MEMORY["CarePath Memory"]
+    CONTEXT[["Unified Patient Context"]]
+    TIMELINE["Patient Timeline"]
+    EVIDENCE["Evidence Retrieval"]
+    REFERRAL["Specialist Navigation"]
+    DOCTOR["Doctor Bridge"]
+    CARE["Personalized Care Plan"]
+    MEDICATION["Medication Workflow"]
+    FOLLOWUP["Follow-up Workflow"]
+    UPDATED["Updated Patient Context"]
 
     INPUT --> MEMORY
-    INPUT --> DOCS
-
     MEMORY --> CONTEXT
-    DOCS --> CONTEXT
-
     CONTEXT --> TIMELINE
     CONTEXT --> EVIDENCE
-
-    EVIDENCE --> REFERRAL
-
     TIMELINE --> REFERRAL
-    TIMELINE --> DOCTOR
-
+    EVIDENCE --> REFERRAL
     REFERRAL --> DOCTOR
-
-    DOCTOR --> REVIEW
-    REVIEW --> CONTEXT
-
-    CONTEXT --> CARE
-
-    CARE --> MED
-    CARE --> FOLLOW
-
-    MED --> CONTEXT
-    FOLLOW --> CONTEXT
-
-    CONTEXT --> TIMELINE
+    DOCTOR --> CARE
+    CARE --> MEDICATION
+    CARE --> FOLLOWUP
+    MEDICATION --> UPDATED
+    FOLLOWUP --> UPDATED
+    UPDATED --> CONTEXT
 ```
 
 ### Continuity Principle
@@ -394,68 +416,26 @@ Updated Patient Context
 | 📡 **Real-Time Workflow Updates** | Uses Server-Sent Events (SSE) to display workflow progress while long-running backend and agent operations are executing. |
 | 🌐 **Responsive Experience** | Provides a consistent experience across desktop and mobile layouts while keeping important healthcare information easy to access. |
 
-### 🔄 Frontend Communication Architecture
+### 🔄 Frontend Communication
 
 ```mermaid
-flowchart TD
-
-    PATIENT(["👤 Patient"])
-
-    UI["🎨 React Application"]
-
-    DASH["📊 CarePath Dashboard"]
-
-    TIMELINE["🕐 Patient Timeline"]
-
-    DOCUMENTS["📄 Document Upload"]
-
-    REFERRAL["🩺 Referral Card"]
-
-    DOCTOR["👨‍⚕️ Doctor Bridge"]
-
-    MEDICATION["💊 Medication"]
-
-    CARE["📝 Care Plan"]
-
-    FOLLOWUP["🔔 Follow-up"]
-
-    API["⚡ FastAPI API"]
-
-    SSE["📡 SSE Stream"]
-
-    AGENTS["🤖 LangGraph Workflow"]
-
-    RESULT["📦 Structured Response"]
+flowchart LR
+    PATIENT["Patient"]
+    UI["React Frontend"]
+    API["FastAPI API"]
+    WORKFLOW["LangGraph Workflow"]
+    RESULT["Structured Result"]
+    SSE["SSE Events"]
+    UI_STATE["Updated UI State"]
 
     PATIENT --> UI
-
-    UI --> DASH
-    UI --> TIMELINE
-    UI --> DOCUMENTS
-    UI --> REFERRAL
-    UI --> DOCTOR
-    UI --> MEDICATION
-    UI --> CARE
-    UI --> FOLLOWUP
-
-    DASH --> API
-    TIMELINE --> API
-    DOCUMENTS --> API
-    REFERRAL --> API
-    DOCTOR --> API
-    MEDICATION --> API
-    CARE --> API
-    FOLLOWUP --> API
-
-    API --> AGENTS
-
-    AGENTS --> RESULT
+    UI --> API
+    API --> WORKFLOW
+    WORKFLOW --> RESULT
     RESULT --> API
-
     API --> SSE
-    SSE --> UI
-
-    UI --> PATIENT
+    SSE --> UI_STATE
+    UI_STATE --> UI
 ```
 
 ### Frontend Design Principle
@@ -484,9 +464,9 @@ React Interface
 Patient
 
 
-
 ```
 ---
+
 
 ## ⚙️ 4. Backend & Integration Domain
 
@@ -508,157 +488,101 @@ Patient
 | 📝 **Logging & Observability** | Captures relevant backend and workflow events to support debugging and operational visibility. |
 | 🛡️ **Security Boundaries** | Separates authentication, patient data access, AI processing, and workflow execution to reduce unnecessary coupling and exposure. |
 
-### 🔄 Backend Request Lifecycle
-
-```mermaid
-sequenceDiagram
-
-    participant P as 👤 Patient
-    participant UI as 🎨 React
-    participant API as ⚡ FastAPI
-    participant AUTH as 🔐 Auth
-    participant SERVICE as ⚙️ Service Layer
-    participant GRAPH as 🤖 LangGraph
-    participant AGENT as 🧩 Agent
-    participant AI as 🔗 AI Service
-    participant DB as 🗄️ Database
-
-    P->>UI: Submit request
-
-    UI->>API: HTTP Request
-
-    API->>AUTH: Validate credentials
-
-    AUTH-->>API: Authorized request
-
-    API->>SERVICE: Validated input
-
-    SERVICE->>DB: Retrieve context
-
-    DB-->>SERVICE: Patient data
-
-    SERVICE->>GRAPH: Start workflow
-
-    GRAPH->>AGENT: Route task
-
-    AGENT->>AI: Execute AI capability
-
-    AI-->>AGENT: Structured result
-
-    AGENT-->>GRAPH: Update CarePathState
-
-    GRAPH-->>SERVICE: Workflow result
-
-    SERVICE->>DB: Persist relevant result
-
-    SERVICE-->>API: Structured response
-
-    API-->>UI: JSON / SSE events
-
-    UI-->>P: Updated healthcare journey
-```
 ### 🧩 Backend Architecture
 
 ```mermaid
 flowchart TD
 
-    CLIENT["🎨 React Frontend"]
+ CLIENT["React Frontend"]
 
-    API["⚡ FastAPI API Gateway"]
+ API["FastAPI API Gateway"]
 
-    AUTH["🔐 Authentication & Authorization"]
+ AUTH["Authentication & Authorization"]
 
-    ROUTERS["🛣️ API Routers"]
+ ROUTERS["API Routers"]
 
-    VALIDATION["✅ Pydantic Validation"]
+ VALIDATION["Pydantic Validation"]
 
-    SERVICE["⚙️ Backend Service Layer"]
+ SERVICE["Backend Service Layer"]
 
-    GRAPH["🤖 LangGraph Supervisor"]
+ GRAPH["LangGraph Supervisor"]
 
-    STATE[["🧠 CarePathState"]]
+ STATE[["CarePathState"]]
 
-    AGENTS["🧩 Specialized Agents"]
+ AGENTS["Specialized Agents"]
 
-    CONTRACTS["🔗 AI Service Contracts"]
+ CONTRACTS["AI Service Contracts"]
 
-    LLM["✨ Gemini / LLM"]
+ LLM["Gemini / LLM"]
 
-    OCR["📄 OCR / Document Intelligence"]
+ OCR["OCR / Document Intelligence"]
 
-    VISION["👁️ Computer Vision"]
+ VISION["Computer Vision"]
 
-    RAG["📚 Evidence / RAG"]
+ RAG["Evidence / RAG"]
 
-    DB[("🗄️ PostgreSQL")]
+ DB[("PostgreSQL")]
 
-    SSE["📡 SSE Streaming"]
+ SSE["SSE Streaming"]
 
-    ERRORS["⚠️ Error Handling"]
+ ERRORS["Error Handling"]
 
-    CLIENT --> API
+ CLIENT --> API
 
-    API --> AUTH
-    AUTH --> ROUTERS
+ API --> AUTH
+ AUTH --> ROUTERS
 
-    ROUTERS --> VALIDATION
-    VALIDATION --> SERVICE
+ ROUTERS --> VALIDATION
+ VALIDATION --> SERVICE
 
-    SERVICE --> GRAPH
-    SERVICE --> DB
+ SERVICE --> GRAPH
+ SERVICE --> DB
 
-    GRAPH <--> STATE
-    GRAPH --> AGENTS
+ GRAPH --> STATE
+ GRAPH --> AGENTS
 
-    AGENTS --> CONTRACTS
+ AGENTS --> CONTRACTS
 
-    CONTRACTS --> LLM
-    CONTRACTS --> OCR
-    CONTRACTS --> VISION
-    CONTRACTS --> RAG
+ CONTRACTS --> LLM
+ CONTRACTS --> OCR
+ CONTRACTS --> VISION
+ CONTRACTS --> RAG
 
-    AGENTS --> STATE
+ AGENTS --> STATE
 
-    STATE --> GRAPH
 
-    GRAPH --> SERVICE
+ SERVICE --> SSE
+ SSE --> CLIENT
 
-    SERVICE --> SSE
-    SSE --> CLIENT
-
-    API --> ERRORS
-    SERVICE --> ERRORS
-    GRAPH --> ERRORS
+ API --> ERRORS
+ SERVICE --> ERRORS
+ GRAPH --> ERRORS
 ```
-### 🔗 AI Service Contract Architecture
+### 🔗 AI Service Isolation
 
 ```mermaid
 flowchart LR
+    AGENTS["LangGraph Agents"]
+    CONTRACT["AI Service Contracts"]
+    LLM["LLM Service"]
+    DOCUMENT["Document Analysis"]
+    VISION["Vision Service"]
+    EVIDENCE["Evidence Service"]
+    PROVIDER["Model Provider"]
+    VECTOR[("Evidence Store")]
 
-    GRAPH["🤖 LangGraph Agents"]
-
-    CONTRACT["🔗 AI Service Contracts"]
-
-    LLM["✨ LLM Service"]
-    DOC["📄 Document Analysis"]
-    VISION["👁️ Vision Service"]
-    EVIDENCE["📚 Evidence Service"]
-
-    PROVIDER["AI Provider / Model"]
-
-    VECTOR[("ChromaDB")]
-
-    GRAPH --> CONTRACT
-
+    AGENTS --> CONTRACT
     CONTRACT --> LLM
-    CONTRACT --> DOC
+    CONTRACT --> DOCUMENT
     CONTRACT --> VISION
     CONTRACT --> EVIDENCE
 
     LLM --> PROVIDER
-    DOC --> PROVIDER
+    DOCUMENT --> PROVIDER
     VISION --> PROVIDER
     EVIDENCE --> VECTOR
+
+    CONTRACT -.-> AGENTS
 ```
 
 The service-contract approach keeps the orchestration layer independent
@@ -694,70 +618,73 @@ entire backend or agent graph to be rewritten.
 
 ---
 
+
 # 🗄️ Database Architecture
 
-CarePath AI uses a structured persistence layer to maintain the patient's
-healthcare journey across encounters, documents, medications, referrals,
-care plans, follow-ups, and timeline events.
+CarePath AI uses a structured relational data layer to maintain patient
+context, healthcare encounters, documents, medications, care plans,
+referrals, timelines, and follow-up information.
 
-The database provides **persistent application data**, while LangGraph's
-`CarePathState` manages the **active state of an AI workflow**.
+The database acts as the persistent source of truth for the patient's
+healthcare journey, while LangGraph's `CarePathState` manages the
+**active state of an AI workflow**.
 
 ## Database Architecture
 
 ```mermaid
 flowchart TD
 
-    APP["🎨 CarePath Application"]
+ APP["CarePath Application"]
 
-    API["⚡ FastAPI Backend"]
+ API["FastAPI Backend"]
 
-    SERVICES["⚙️ Backend Services"]
+ SERVICES["Backend Services"]
 
-    REPOSITORY["🗂️ Repository / Data Access Layer"]
+ REPOSITORY["Repository / Data Access Layer"]
 
-    ORM["🔗 SQLAlchemy ORM"]
+ ORM["SQLAlchemy ORM"]
 
-    DB[("🗄️ PostgreSQL")]
+ DB[("PostgreSQL")]
 
-    USER["👤 Users"]
+ USER["Users"]
 
-    PATIENT["🧑 Patients"]
+ PATIENT["Patients"]
 
-    ENCOUNTER["🩺 Encounters"]
+ ENCOUNTER["Encounters"]
 
-    DOCUMENT["📄 Medical Documents"]
+ DOCUMENT["Medical Documents"]
 
-    MEDICATION["💊 Medications"]
+ MEDICATION["Medications"]
 
-    REFERRAL["🩺 Referrals"]
+ REFERRAL["Referrals"]
 
-    CAREPLAN["📝 Care Plans"]
+ CAREPLAN["Care Plans"]
 
-    FOLLOWUP["🔔 Follow-ups"]
+ FOLLOWUP["Follow-ups"]
 
-    TIMELINE["🕐 Timeline Events"]
+ TIMELINE["Timeline Events"]
 
-    APP --> API
+ APP --> API
 
-    API --> SERVICES
+ API --> SERVICES
 
-    SERVICES --> REPOSITORY
+ SERVICES --> REPOSITORY
 
-    REPOSITORY --> ORM
+ REPOSITORY --> ORM
 
-    ORM --> DB
+ ORM --> DB
 
-    DB --> USER
-    DB --> PATIENT
-    DB --> ENCOUNTER
-    DB --> DOCUMENT
-    DB --> MEDICATION
-    DB --> REFERRAL
-    DB --> CAREPLAN
-    DB --> FOLLOWUP
-    DB --> TIMELINE
+ DB --> USER
+ DB --> PATIENT
+ DB --> ENCOUNTER
+ DB --> DOCUMENT
+ DB --> MEDICATION
+ DB --> REFERRAL
+ DB --> CAREPLAN
+ DB --> FOLLOWUP
+ DB --> TIMELINE
 ```
+
 
 ### Persistence Flow
 
@@ -779,6 +706,7 @@ Persistent Healthcare Data
 
 ---
 
+
 ## 🧩 Core Data Domains
 
 | Data Domain | Purpose |
@@ -795,97 +723,194 @@ Persistent Healthcare Data
 
 ---
 
-## 🔗 Patient Data Relationships
+
+---
+
+## Entity Relationship Architecture
 
 ```mermaid
 erDiagram
-
-    USER ||--o| PATIENT : owns
-
+    USER ||--o| PATIENT : has_profile
     PATIENT ||--o{ ENCOUNTER : has
     PATIENT ||--o{ MEDICAL_DOCUMENT : uploads
     PATIENT ||--o{ MEDICATION : uses
     PATIENT ||--o{ REFERRAL : receives
-    PATIENT ||--o{ CARE_PLAN : follows
+    PATIENT ||--o{ CARE_PLAN : has
     PATIENT ||--o{ FOLLOW_UP : requires
     PATIENT ||--o{ TIMELINE_EVENT : generates
-
     ENCOUNTER ||--o{ MEDICAL_DOCUMENT : contains
-    ENCOUNTER ||--o{ REFERRAL : generates
-
+    ENCOUNTER ||--o{ REFERRAL : produces
+    MEDICAL_DOCUMENT ||--o{ DOCUMENT_EXTRACTION : produces
+    REFERRAL ||--o{ DOCTOR_REVIEW : reviewed_through
+    CARE_PLAN ||--o{ CARE_PLAN_ITEM : contains
+    MEDICATION ||--o{ MEDICATION_REMINDER : has
     USER {
-        uuid id PK
-        string email
-        string role
-        datetime created_at
+    uuid id PK
+    string email
+    string role
+    datetime created_at
     }
-
     PATIENT {
-        uuid id PK
-        uuid user_id FK
-        string profile
-        datetime created_at
+    uuid id PK
+    uuid user_id FK
+    string name
+    date date_of_birth
+    string preferences
+    datetime created_at
     }
-
     ENCOUNTER {
-        uuid id PK
-        uuid patient_id FK
-        string type
-        string summary
-        datetime occurred_at
+    uuid id PK
+    uuid patient_id FK
+    string encounter_type
+    string summary
+    datetime occurred_at
     }
-
     MEDICAL_DOCUMENT {
-        uuid id PK
-        uuid patient_id FK
-        uuid encounter_id FK
-        string document_type
-        string storage_reference
-        datetime uploaded_at
+    uuid id PK
+    uuid patient_id FK
+    uuid encounter_id FK
+    string document_type
+    string file_location
+    datetime uploaded_at
     }
-
+    DOCUMENT_EXTRACTION {
+    uuid id PK
+    uuid document_id FK
+    string extraction_type
+    json extracted_data
+    float confidence
+    }
     MEDICATION {
-        uuid id PK
-        uuid patient_id FK
-        string name
-        string dosage
-        string frequency
-        string instructions
+    uuid id PK
+    uuid patient_id FK
+    string medication_name
+    string dosage
+    string frequency
+    string instructions
     }
-
+    MEDICATION_REMINDER {
+    uuid id PK
+    uuid medication_id FK
+    string schedule
+    boolean active
+    }
     REFERRAL {
-        uuid id PK
-        uuid patient_id FK
-        uuid encounter_id FK
-        string specialist
-        string reason
-        string status
+    uuid id PK
+    uuid patient_id FK
+    uuid encounter_id FK
+    string specialist
+    string reason
+    float confidence
+    string status
     }
-
+    DOCTOR_REVIEW {
+    uuid id PK
+    uuid referral_id FK
+    string reviewer
+    string feedback
+    datetime reviewed_at
+    }
     CARE_PLAN {
-        uuid id PK
-        uuid patient_id FK
-        string title
-        string status
-        datetime created_at
+    uuid id PK
+    uuid patient_id FK
+    string title
+    string status
+    datetime created_at
     }
-
+    CARE_PLAN_ITEM {
+    uuid id PK
+    uuid care_plan_id FK
+    string action
+    string status
+    datetime due_at
+    }
     FOLLOW_UP {
-        uuid id PK
-        uuid patient_id FK
-        string type
-        datetime scheduled_at
-        string status
+    uuid id PK
+    uuid patient_id FK
+    string type
+    datetime scheduled_at
+    string status
     }
-
     TIMELINE_EVENT {
-        uuid id PK
-        uuid patient_id FK
-        string event_type
-        string description
-        datetime occurred_at
+    uuid id PK
+    uuid patient_id FK
+    string event_type
+    string description
+    datetime occurred_at
     }
 ```
+
+
+## Database Responsibilities
+
+| Component | Responsibility |
+| :--- | :--- |
+| 👤 **User & Patient Data** | Stores authenticated user information and the associated patient profile. |
+| 🩺 **Encounter Data** | Maintains consultation and healthcare interaction records. |
+| 📄 **Medical Documents** | Stores document metadata and references to uploaded medical files. |
+| 🔍 **Document Extraction** | Stores structured information produced from supported document-analysis workflows. |
+| 💊 **Medication Data** | Maintains patient-confirmed medication information used by medication workflows. |
+| 🩺 **Referral Data** | Stores specialist-navigation results, rationale, confidence, and status. |
+| 👨‍⚕️ **Doctor Review** | Persists clinician feedback and human-in-the-loop review information. |
+| 📝 **Care Plans** | Stores personalized care plans and their individual action items. |
+| 🔔 **Follow-ups** | Maintains scheduled follow-up activities and their status. |
+| 🕐 **Patient Timeline** | Provides a persistent chronological representation of the patient's healthcare journey. |
+
+
+### Persistence Principle
+
+```text
+                    ┌──────────────────────┐
+                    │    Patient Context   │
+                    └──────────┬───────────┘
+                               ↓
+              ┌────────────────────────────────┐
+              │           PostgreSQL            │
+              ├────────────────────────────────┤
+              │ Encounters                      │
+              │ Documents                       │
+              │ Medications                     │
+              │ Referrals                       │
+              │ Doctor Reviews                  │
+              │ Care Plans                      │
+              │ Follow-ups                      │
+              │ Timeline Events                 │
+              └────────────────────────────────┘
+                               ↑
+                               │
+                    ┌──────────┴───────────┐
+                    │   Backend Services   │
+                    │   + LangGraph        │
+                    └──────────────────────┘
+```
+
+> **PostgreSQL provides persistent healthcare data, while LangGraph manages
+> transient workflow state during multi-agent execution.**
+
+
+### Core Tables
+
+- Users
+- PatientProfile
+- MedicalFiles
+- SymptomSessions
+- PatientSymptoms
+- AIAnalysis
+- Recommendations
+- CarePlans
+- FollowUps
+- Notifications
+- Medications
+- Visits
+- FamilyMembers
+- Feedback
+- AuditHistory
+- AgentRuns
+- TimelineEvents
+- EvidenceRetrieval
+
+---
+
 
 ---
 
@@ -905,28 +930,28 @@ agent execution state**.
 ```mermaid
 flowchart LR
 
-    PATIENT["👤 Patient"]
+ PATIENT["Patient"]
 
-    API["⚡ FastAPI"]
+ API["FastAPI"]
 
-    GRAPH["🤖 LangGraph"]
+ GRAPH["LangGraph"]
 
-    STATE["🧠 CarePathState"]
+ STATE["CarePathState"]
 
-    POSTGRES[("🗄️ PostgreSQL<br/>Persistent Data")]
+ POSTGRES[("PostgreSQL - Persistent Data")]
 
-    VECTOR[("📚 ChromaDB<br/>Evidence Retrieval")]
+ VECTOR[("ChromaDB - Evidence Retrieval")]
 
-    PATIENT --> API
+ PATIENT --> API
 
-    API --> GRAPH
+ API --> GRAPH
 
-    GRAPH <--> STATE
+ GRAPH --> STATE
 
-    API --> POSTGRES
-    GRAPH --> POSTGRES
+ API --> POSTGRES
+ GRAPH --> POSTGRES
 
-    GRAPH --> VECTOR
+ GRAPH --> VECTOR
 ```
 
 > **PostgreSQL stores persistent healthcare data, while `CarePathState`
@@ -934,6 +959,7 @@ flowchart LR
 > evidence-retrieval layer rather than acting as the primary patient database.**
 
 ---
+
 
 # 🔌 API Architecture & Endpoints
 
@@ -946,36 +972,35 @@ system, LangGraph workflows, AI services, and persistent data layer.
 ```mermaid
 flowchart LR
 
-    CLIENT["🎨 React Frontend"]
+ CLIENT["React Frontend"]
 
-    API["⚡ FastAPI"]
+ API["FastAPI"]
 
-    AUTH["🔐 Authentication"]
+ AUTH["Authentication"]
 
-    ROUTER["🛣️ API Routers"]
+ ROUTER["API Routers"]
 
-    SERVICE["⚙️ Service Layer"]
+ SERVICE["Service Layer"]
 
-    GRAPH["🤖 LangGraph"]
+ GRAPH["LangGraph"]
 
-    DB[("🗄️ PostgreSQL")]
+ DB[("PostgreSQL")]
 
-    AI["🧠 AI Service Contracts"]
+ AI["AI Service Contracts"]
 
-    CLIENT --> API
-    API --> AUTH
-    AUTH --> ROUTER
+ CLIENT --> API
+ API --> AUTH
+ AUTH --> ROUTER
 
-    ROUTER --> SERVICE
+ ROUTER --> SERVICE
 
-    SERVICE --> GRAPH
-    SERVICE --> DB
+ SERVICE --> GRAPH
+ SERVICE --> DB
 
-    GRAPH --> AI
-    GRAPH --> DB
+ GRAPH --> AI
+ GRAPH --> DB
 
-    SERVICE --> API
-    API --> CLIENT
+ SERVICE --> API
 ```
 
 ---
@@ -1010,6 +1035,151 @@ flowchart LR
 
 ---
 
+
+# 🔄 End-to-End Data Flow
+
+CarePath AI transforms fragmented patient information into a continuous,
+context-aware healthcare navigation workflow.
+
+```mermaid
+flowchart TD
+
+ PATIENT(["Patient"])
+
+ INPUT["Patient Input - Symptoms - History - Questions"]
+
+ UPLOAD["Documents & Images - Reports - Prescriptions"]
+
+ API["FastAPI API Layer"]
+
+ INTAKE["Intake Agent - Structure Patient Information"]
+
+ MEMORY["CarePath Memory - Retrieve Relevant Context"]
+
+ SUP["LangGraph Supervisor - Coordinate Agent Workflow"]
+
+ RECORDS["Medical Records Agent"]
+
+ VISION["Vision Agent"]
+
+ TIMELINE["Timeline Agent"]
+
+ SAFETY["Safety Agent"]
+
+ REASONING["Clinical Reasoning Agent"]
+
+ EVIDENCE["Evidence Agent - RAG + Trusted Sources"]
+
+ REFERRAL["Explainable Referral - Specialist Navigation"]
+
+ DOCTOR["Doctor Bridge - Summary + Case Questions"]
+
+ REVIEW{"Expert Review - Required?"}
+
+ CARE["Personalized Care Plan"]
+
+ MEDICATION["Medication Companion"]
+
+ FOLLOWUP["Follow-up Intelligence"]
+
+ TIMELINE_OUT["AI Patient Timeline"]
+
+ DB[("PostgreSQL")]
+
+ DASHBOARD["CarePath Dashboard"]
+
+ PATIENT --> INPUT
+ PATIENT --> UPLOAD
+
+ INPUT --> API
+ UPLOAD --> API
+
+ API --> INTAKE
+
+ INTAKE --> MEMORY
+
+ MEMORY --> SUP
+
+ SUP --> RECORDS
+ SUP --> VISION
+ SUP --> TIMELINE
+ SUP --> SAFETY
+
+
+ SUP --> REASONING
+
+ REASONING --> EVIDENCE
+
+ REASONING --> REFERRAL
+
+ REFERRAL --> DOCTOR
+
+ DOCTOR --> REVIEW
+
+ REVIEW --> CARE
+
+ CARE --> MEDICATION
+ MEDICATION --> FOLLOWUP
+
+ FOLLOWUP --> SUP
+
+ SUP --> TIMELINE_OUT
+
+ MEMORY --> DB
+ TIMELINE_OUT --> DB
+ REFERRAL --> DB
+ DOCTOR --> DB
+ CARE --> DB
+ MEDICATION --> DB
+ FOLLOWUP --> DB
+
+ DB --> DASHBOARD
+ TIMELINE_OUT --> DASHBOARD
+ CARE --> DASHBOARD
+ FOLLOWUP --> DASHBOARD
+
+ DASHBOARD --> PATIENT
+```
+
+### 🔄 End-to-End Data Flow & Data Transformation
+
+```mermaid
+flowchart LR
+    INPUT["Raw Patient Information"]
+    CONTEXT["Structured Patient Context"]
+    STATE[["CarePath State"]]
+    AGENTS["Specialized AI Agents"]
+    REASONING["Clinical Reasoning"]
+    EVIDENCE["Evidence and RAG"]
+    NAVIGATION["Explainable Specialist Navigation"]
+    DOCTOR["Doctor Bridge"]
+    CARE["Personalized Care"]
+    FOLLOWUP["Medication and Follow-up"]
+    TIMELINE["Patient Timeline"]
+    DASHBOARD["Patient Dashboard"]
+
+    INPUT --> CONTEXT
+    CONTEXT --> STATE
+    STATE --> AGENTS
+    AGENTS --> REASONING
+    REASONING --> EVIDENCE
+    EVIDENCE --> NAVIGATION
+    NAVIGATION --> DOCTOR
+    DOCTOR --> CARE
+    CARE --> FOLLOWUP
+    FOLLOWUP --> TIMELINE
+    TIMELINE --> DASHBOARD
+    TIMELINE --> STATE
+```
+
+> **The key distinction is that CarePath is not a one-way pipeline. Follow-up information and new patient interactions are fed back into the patient's persistent context, allowing subsequent workflows to build on the existing healthcare journey.**
+
+
+---
+
+
+<a id="core-modules"></a>
+
 # 🧩 Core Modules
 
 CarePath AI follows a modular backend structure in which API handling,
@@ -1021,32 +1191,32 @@ data access remain separated.
 ```mermaid
 flowchart TD
 
-    API["⚡ API Layer"]
+ API["API Layer"]
 
-    SCHEMAS["📋 Schemas<br/>Request / Response Models"]
+ SCHEMAS["Schemas - Request / Response Models"]
 
-    SERVICES["⚙️ Services<br/>Application Logic"]
+ SERVICES["Services - Application Logic"]
 
-    AGENTS["🤖 Agents<br/>LangGraph Nodes"]
+ AGENTS["Agents - LangGraph Nodes"]
 
-    STATE["🧠 State<br/>CarePathState"]
+ STATE["State - CarePathState"]
 
-    CONTRACTS["🔗 AI Service Contracts"]
+ CONTRACTS["AI Service Contracts"]
 
-    REPOSITORIES["🗂️ Repositories<br/>Data Access"]
+ REPOSITORIES["Repositories - Data Access"]
 
-    DB[("🗄️ PostgreSQL")]
+ DB[("PostgreSQL")]
 
-    API --> SCHEMAS
-    API --> SERVICES
+ API --> SCHEMAS
+ API --> SERVICES
 
-    SERVICES --> AGENTS
-    SERVICES --> REPOSITORIES
+ SERVICES --> AGENTS
+ SERVICES --> REPOSITORIES
 
-    AGENTS --> STATE
-    AGENTS --> CONTRACTS
+ AGENTS --> STATE
+ AGENTS --> CONTRACTS
 
-    REPOSITORIES --> DB
+ REPOSITORIES --> DB
 ```
 
 ---
@@ -1127,6 +1297,27 @@ CarePath-AI/
 
 ---
 
+
+<a id="key-project-metrics"></a>
+
+# 📊 Key Project Metrics
+
+> **Note:** The figures below are placeholders. Replace them with real
+> numbers (from your test suite, CI, and issue tracker) before publishing.
+
+| Metric | Value |
+| :--- | :--- |
+| 🧩 Specialized AI Agents | 12+ |
+| 🔌 API Endpoint Categories | 10 |
+| 🗄️ Core Data Domains | 9 |
+| 🧪 Automated Test Coverage | TBD % |
+| 📄 Supported Document Types | Reports · Prescriptions · Lab Results · Imaging |
+| ⚡ Avg. Workflow Response Time | TBD ms |
+| 🐳 Deployment | Dockerized (Frontend + Backend) |
+| 📦 Repository Status | Active Development |
+
+---
+
 # 🧪 Testing & Quality Assurance
 
 CarePath AI follows a layered testing strategy designed to validate the
@@ -1135,43 +1326,6 @@ and safety boundaries independently.
 
 The goal is to ensure that changes to individual agents or services do
 not silently break the overall healthcare-navigation workflow.
-
-## Testing Architecture
-
-```mermaid
-flowchart TD
-
-    TEST["🧪 Test Suite"]
-
-    UNIT["🔬 Unit Tests"]
-
-    API["⚡ API Tests"]
-
-    AGENT["🤖 Agent Tests"]
-
-    GRAPH["🧠 LangGraph Workflow Tests"]
-
-    SERVICE["🔗 AI Service Contract Tests"]
-
-    INTEGRATION["🔄 Integration Tests"]
-
-    SAFETY["🛡️ Safety Tests"]
-
-    E2E["🌐 End-to-End Tests"]
-
-    UNIT --> TEST
-    API --> TEST
-    AGENT --> TEST
-    GRAPH --> TEST
-    SERVICE --> TEST
-    INTEGRATION --> TEST
-    SAFETY --> TEST
-    E2E --> TEST
-
-    TEST --> RESULT["📊 Test Results"]
-```
-
----
 
 ## 🔬 Testing Layers
 
@@ -1197,28 +1351,28 @@ assertion.
 ```mermaid
 flowchart LR
 
-    INPUT["Patient Input"]
+ INPUT["Patient Input"]
 
-    INITIAL["Initial CarePathState"]
+ INITIAL["Initial CarePathState"]
 
-    SUP["Supervisor"]
+ SUP["Supervisor"]
 
-    AGENT["Specialized Agent"]
+ AGENT["Specialized Agent"]
 
-    UPDATED["Updated CarePathState"]
+ UPDATED["Updated CarePathState"]
 
-    NEXT{"Next Node?"}
+ NEXT{"Next Node?"}
 
-    COMPLETE["Workflow Complete"]
+ COMPLETE["Workflow Complete"]
 
-    INPUT --> INITIAL
-    INITIAL --> SUP
-    SUP --> AGENT
-    AGENT --> UPDATED
-    UPDATED --> NEXT
+ INPUT --> INITIAL
+ INITIAL --> SUP
+ SUP --> AGENT
+ AGENT --> UPDATED
+ UPDATED --> NEXT
 
-    NEXT -->|Continue| SUP
-    NEXT -->|Complete| COMPLETE
+ NEXT --> SUP
+ NEXT --> COMPLETE
 ```
 
 The workflow tests verify that:
@@ -1271,25 +1425,25 @@ or mocks.
 ```mermaid
 flowchart LR
 
-    AGENT["🤖 LangGraph Agent"]
+ AGENT["LangGraph Agent"]
 
-    CONTRACT["🔗 AI Service Contract"]
+ CONTRACT["AI Service Contract"]
 
-    REAL["✨ Real AI Provider"]
+ REAL["Real AI Provider"]
 
-    MOCK["🧪 Mock / Test Implementation"]
+ MOCK["Mock / Test Implementation"]
 
-    RESULT["📦 Structured Result"]
+ RESULT["Structured Result"]
 
-    AGENT --> CONTRACT
+ AGENT --> CONTRACT
 
-    CONTRACT --> REAL
-    CONTRACT --> MOCK
+ CONTRACT --> REAL
+ CONTRACT --> MOCK
 
-    REAL --> RESULT
-    MOCK --> RESULT
+ REAL --> RESULT
+ MOCK --> RESULT
 
-    RESULT --> AGENT
+ RESULT --> AGENT
 ```
 
 This separation allows the orchestration layer to be tested for routing,
@@ -1316,7 +1470,6 @@ also considers failure and safety conditions.
 
 > **Testing validates system behaviour and safety boundaries; it does not
 > establish clinical efficacy or replace clinical validation.**
-
 
 
 # 📱 Platform Features
@@ -1463,711 +1616,7 @@ Features:
 ---
 
 
-### 🔄 AI Workflow
-
-```mermaid
-flowchart TD
-
-    START(["👤 Patient Request"])
-
-    INTAKE["📥 Intake Agent<br/>Symptoms + Context"]
-
-    SAFETY{"🛡️ Safety Agent<br/>Safety Check"}
-
-    MEMORY["🧠 CarePath Memory<br/>Retrieve Patient Context"]
-
-    DOCS["📄 Medical Documents Agent<br/>Reports + Prescriptions"]
-
-    VISION["👁️ Vision Agent<br/>Supported Medical Images"]
-
-    TIMELINE["🕐 Timeline Agent<br/>Build Healthcare Journey"]
-
-    REASONING["🧩 Clinical Reasoning Agent<br/>Combine Patient Context"]
-
-    EVIDENCE["📚 Evidence Agent<br/>RAG + Trusted Sources"]
-
-    REFERRAL["🩺 Referral Agent<br/>Specialist Navigation"]
-
-    DOCTOR["👨‍⚕️ Doctor Bridge<br/>Patient Brief + Questions"]
-
-    REVIEW{"🤝 Clinician Review<br/>Required?"}
-
-    CARE["📝 Care Plan Agent<br/>Personalized Next Steps"]
-
-    MED["💊 Medication Agent<br/>Medication Workflow"]
-
-    FOLLOW["🔔 Follow-up Agent<br/>Monitoring + Follow-up"]
-
-    SUP["🤖 LangGraph Supervisor<br/>State + Agent Routing"]
-
-    END(["✅ Structured CarePath Response"])
-
-
-    START --> INTAKE
-
-    INTAKE --> SUP
-
-    SUP --> SAFETY
-
-    SAFETY -->|Safety concern| END
-    SAFETY -->|Continue| MEMORY
-
-    MEMORY --> DOCS
-    MEMORY --> VISION
-
-    DOCS --> TIMELINE
-    VISION --> TIMELINE
-
-    TIMELINE --> REASONING
-
-    REASONING --> EVIDENCE
-
-    EVIDENCE --> REFERRAL
-
-    REFERRAL --> DOCTOR
-
-    DOCTOR --> REVIEW
-
-    REVIEW -->|Yes| DOCTOR
-    REVIEW -->|Approved / Continue| CARE
-
-    CARE --> MED
-    MED --> FOLLOW
-
-    FOLLOW --> SUP
-
-    SUP --> END
-```
-
-### Workflow Logic
-
-```text
-Patient Input
-     ↓
-Safety Check
-     ↓
-Retrieve Patient Context
-     ↓
-Analyze Documents / Images
-     ↓
-Build Patient Timeline
-     ↓
-Clinical Reasoning
-     ↓
-Evidence Retrieval (RAG)
-     ↓
-Specialist Navigation
-     ↓
-Doctor Interaction
-     ↓
-Human Review
-     ↓
-Personalized Care Plan
-     ↓
-Medication Support
-     ↓
-Follow-up Intelligence
-     ↓
-Updated Patient Context
-```
-
-The workflow is **state-driven rather than a fixed linear pipeline**.  
-The LangGraph Supervisor evaluates the current patient state and routes
-execution to the relevant specialized agent. Agents update the shared
-workflow state, allowing subsequent decisions to use the accumulated
-context.
----
-
-### ⚙️ Backend Architecture
-
-```mermaid
-flowchart TD
-
-    CLIENT["🎨 React Frontend"]
-
-    API["⚡ FastAPI API Gateway"]
-
-    AUTH["🔐 Authentication<br/>JWT + Authorization"]
-
-    ROUTER["🛣️ API Routers"]
-
-    SERVICE["⚙️ Backend Service Layer"]
-
-    VALIDATION["✅ Pydantic<br/>Validation"]
-
-    GRAPH["🤖 LangGraph Supervisor"]
-
-    STATE["🧠 CarePathState<br/>Shared Workflow State"]
-
-    AGENTS["🧩 Specialized Agents"]
-
-    CONTRACTS["🔗 AI Service Contracts"]
-
-    GEMINI["✨ Gemini / LLM"]
-
-    OCR["📄 OCR / Document Intelligence"]
-
-    VISION["👁️ Computer Vision"]
-
-    RAG["📚 Evidence / RAG"]
-
-    DB["🗄️ PostgreSQL"]
-
-    SSE["📡 SSE Streaming"]
-
-    ERROR["⚠️ Error Handling<br/>Structured Responses"]
-
-    CLIENT -->|HTTP / JSON| API
-
-    API --> AUTH
-
-    AUTH --> ROUTER
-
-    ROUTER --> VALIDATION
-
-    VALIDATION --> SERVICE
-
-    SERVICE --> GRAPH
-
-    SERVICE --> DB
-
-    GRAPH --> STATE
-
-    STATE --> AGENTS
-
-    AGENTS --> CONTRACTS
-
-    CONTRACTS --> GEMINI
-    CONTRACTS --> OCR
-    CONTRACTS --> VISION
-    CONTRACTS --> RAG
-
-    AGENTS --> STATE
-
-    STATE --> GRAPH
-
-    GRAPH --> SERVICE
-
-    SERVICE --> SSE
-
-    SSE --> CLIENT
-
-    API --> ERROR
-    SERVICE --> ERROR
-    GRAPH --> ERROR
-```
-
-### Backend Request Lifecycle
-
-```mermaid
-sequenceDiagram
-
-    participant UI as React Frontend
-    participant API as FastAPI
-    participant AUTH as Auth Layer
-    participant SERVICE as Service Layer
-    participant GRAPH as LangGraph
-    participant AGENT as AI Agent
-    participant AI as AI Service
-    participant DB as PostgreSQL
-
-    UI->>API: HTTP Request
-
-    API->>AUTH: Validate JWT
-    AUTH-->>API: Authorized User
-
-    API->>SERVICE: Validated Request
-
-    SERVICE->>DB: Retrieve Patient Context
-    DB-->>SERVICE: Patient Data
-
-    SERVICE->>GRAPH: Start Workflow
-
-    GRAPH->>AGENT: Route Task
-
-    AGENT->>AI: Execute AI Capability
-    AI-->>AGENT: Structured Result
-
-    AGENT-->>GRAPH: Update CarePathState
-
-    GRAPH-->>SERVICE: Workflow Result
-
-    SERVICE->>DB: Persist Result
-
-    SERVICE-->>API: Structured Response
-
-    API-->>UI: JSON / SSE Events
-```
-
-### Backend Responsibilities
-
-| Component | Technical Responsibility |
-| :--- | :--- |
-| ⚡ **FastAPI API Gateway** | Exposes REST endpoints and acts as the entry point between the frontend and backend services. |
-| 🔐 **Authentication Layer** | Validates JWT credentials and controls access to protected resources. |
-| 🛣️ **API Routers** | Organize endpoints by functional area while keeping HTTP concerns separate from business logic. |
-| ⚙️ **Service Layer** | Contains backend application logic and coordinates database and LangGraph operations. |
-| ✅ **Pydantic Validation** | Validates incoming requests and structures outgoing API responses. |
-| 🤖 **LangGraph Engine** | Executes stateful multi-agent workflows and controls conditional agent routing. |
-| 🧠 **CarePathState** | Maintains shared context exchanged between agents during a workflow. |
-| 🔗 **AI Service Contracts** | Provide provider-independent interfaces for LLM, OCR, vision, and evidence capabilities. |
-| 🗄️ **PostgreSQL** | Stores persistent patient, encounter, document, workflow, and care-related data handled by the backend. |
-| 📡 **SSE Streaming** | Sends real-time workflow events from backend execution to the frontend. |
-| ⚠️ **Error Handling** | Converts validation, service, AI, and workflow failures into controlled API responses. |
----
-
-# 🗄 Database Architecture
-
----
-
-# 🗄️ Database Architecture
-
-CarePath AI uses a structured relational data layer to maintain patient
-context, healthcare encounters, documents, medications, care plans,
-referrals, timelines, and follow-up information.
-
-The database acts as the persistent source of truth for the patient's
-healthcare journey, while LangGraph maintains workflow state during
-agent execution.
-
-## Entity Relationship Architecture
-
-```mermaid
-erDiagram
-
-    USER ||--o| PATIENT : "has profile"
-
-    PATIENT ||--o{ ENCOUNTER : "has"
-    PATIENT ||--o{ MEDICAL_DOCUMENT : "uploads"
-    PATIENT ||--o{ MEDICATION : "uses"
-    PATIENT ||--o{ REFERRAL : "receives"
-    PATIENT ||--o{ CARE_PLAN : "has"
-    PATIENT ||--o{ FOLLOW_UP : "requires"
-    PATIENT ||--o{ TIMELINE_EVENT : "generates"
-
-    ENCOUNTER ||--o{ MEDICAL_DOCUMENT : "contains"
-    ENCOUNTER ||--o{ REFERRAL : "produces"
-
-    MEDICAL_DOCUMENT ||--o{ DOCUMENT_EXTRACTION : "produces"
-
-    REFERRAL ||--o{ DOCTOR_REVIEW : "reviewed through"
-
-    CARE_PLAN ||--o{ CARE_PLAN_ITEM : "contains"
-
-    MEDICATION ||--o{ MEDICATION_REMINDER : "has"
-
-    USER {
-        uuid id PK
-        string email
-        string role
-        datetime created_at
-    }
-
-    PATIENT {
-        uuid id PK
-        uuid user_id FK
-        string name
-        date date_of_birth
-        string preferences
-        datetime created_at
-    }
-
-    ENCOUNTER {
-        uuid id PK
-        uuid patient_id FK
-        string encounter_type
-        string summary
-        datetime occurred_at
-    }
-
-    MEDICAL_DOCUMENT {
-        uuid id PK
-        uuid patient_id FK
-        uuid encounter_id FK
-        string document_type
-        string file_location
-        datetime uploaded_at
-    }
-
-    DOCUMENT_EXTRACTION {
-        uuid id PK
-        uuid document_id FK
-        string extraction_type
-        json extracted_data
-        float confidence
-    }
-
-    MEDICATION {
-        uuid id PK
-        uuid patient_id FK
-        string medication_name
-        string dosage
-        string frequency
-        string instructions
-    }
-
-    MEDICATION_REMINDER {
-        uuid id PK
-        uuid medication_id FK
-        string schedule
-        boolean active
-    }
-
-    REFERRAL {
-        uuid id PK
-        uuid patient_id FK
-        uuid encounter_id FK
-        string specialist
-        string reason
-        float confidence
-        string status
-    }
-
-    DOCTOR_REVIEW {
-        uuid id PK
-        uuid referral_id FK
-        string reviewer
-        string feedback
-        datetime reviewed_at
-    }
-
-    CARE_PLAN {
-        uuid id PK
-        uuid patient_id FK
-        string title
-        string status
-        datetime created_at
-    }
-
-    CARE_PLAN_ITEM {
-        uuid id PK
-        uuid care_plan_id FK
-        string action
-        string status
-        datetime due_at
-    }
-
-    FOLLOW_UP {
-        uuid id PK
-        uuid patient_id FK
-        string type
-        datetime scheduled_at
-        string status
-    }
-
-    TIMELINE_EVENT {
-        uuid id PK
-        uuid patient_id FK
-        string event_type
-        string description
-        datetime occurred_at
-    }
-```
-
-## Data Flow
-
-```mermaid
-flowchart LR
-
-    USER["👤 User"]
-
-    PATIENT["🧑 Patient Profile"]
-
-    ENCOUNTER["🩺 Encounters"]
-
-    DOCUMENTS["📄 Medical Documents"]
-
-    EXTRACTION["🔍 Document Extraction"]
-
-    MEDICATION["💊 Medications"]
-
-    REFERRAL["🩺 Referrals"]
-
-    REVIEW["👨‍⚕️ Doctor Review"]
-
-    CARE["📝 Care Plans"]
-
-    FOLLOWUP["🔔 Follow-ups"]
-
-    TIMELINE["🕐 Patient Timeline"]
-
-    DB[("PostgreSQL")]
-
-    USER --> PATIENT
-
-    PATIENT --> ENCOUNTER
-    PATIENT --> DOCUMENTS
-    PATIENT --> MEDICATION
-    PATIENT --> REFERRAL
-    PATIENT --> CARE
-    PATIENT --> FOLLOWUP
-    PATIENT --> TIMELINE
-
-    DOCUMENTS --> EXTRACTION
-
-    REFERRAL --> REVIEW
-
-    ENCOUNTER --> TIMELINE
-    DOCUMENTS --> TIMELINE
-    MEDICATION --> TIMELINE
-    REFERRAL --> TIMELINE
-    CARE --> TIMELINE
-    FOLLOWUP --> TIMELINE
-
-    PATIENT --> DB
-    ENCOUNTER --> DB
-    DOCUMENTS --> DB
-    EXTRACTION --> DB
-    MEDICATION --> DB
-    REFERRAL --> DB
-    REVIEW --> DB
-    CARE --> DB
-    FOLLOWUP --> DB
-    TIMELINE --> DB
-```
-
-## Database Responsibilities
-
-| Component | Responsibility |
-| :--- | :--- |
-| 👤 **User & Patient Data** | Stores authenticated user information and the associated patient profile. |
-| 🩺 **Encounter Data** | Maintains consultation and healthcare interaction records. |
-| 📄 **Medical Documents** | Stores document metadata and references to uploaded medical files. |
-| 🔍 **Document Extraction** | Stores structured information produced from supported document-analysis workflows. |
-| 💊 **Medication Data** | Maintains patient-confirmed medication information used by medication workflows. |
-| 🩺 **Referral Data** | Stores specialist-navigation results, rationale, confidence, and status. |
-| 👨‍⚕️ **Doctor Review** | Persists clinician feedback and human-in-the-loop review information. |
-| 📝 **Care Plans** | Stores personalized care plans and their individual action items. |
-| 🔔 **Follow-ups** | Maintains scheduled follow-up activities and their status. |
-| 🕐 **Patient Timeline** | Provides a persistent chronological representation of the patient's healthcare journey. |
-
-### Persistence Principle
-
-```text
-                    ┌──────────────────────┐
-                    │    Patient Context   │
-                    └──────────┬───────────┘
-                               ↓
-              ┌────────────────────────────────┐
-              │           PostgreSQL            │
-              ├────────────────────────────────┤
-              │ Encounters                      │
-              │ Documents                       │
-              │ Medications                     │
-              │ Referrals                       │
-              │ Doctor Reviews                  │
-              │ Care Plans                      │
-              │ Follow-ups                      │
-              │ Timeline Events                 │
-              └────────────────────────────────┘
-                               ↑
-                               │
-                    ┌──────────┴───────────┐
-                    │   Backend Services   │
-                    │   + LangGraph        │
-                    └──────────────────────┘
-```
-
-> **PostgreSQL provides persistent healthcare data, while LangGraph manages
-> transient workflow state during multi-agent execution.**
-
-### Core Tables
-
-- Users
-- PatientProfile
-- MedicalFiles
-- SymptomSessions
-- PatientSymptoms
-- AIAnalysis
-- Recommendations
-- CarePlans
-- FollowUps
-- Notifications
-- Medications
-- Visits
-- FamilyMembers
-- Feedback
-- AuditHistory
-- AgentRuns
-- TimelineEvents
-- EvidenceRetrieval
-
----
-
-# 🔄 End-to-End Data Flow
-
-CarePath AI transforms fragmented patient information into a continuous,
-context-aware healthcare navigation workflow.
-
-```mermaid
-flowchart TD
-
-    PATIENT(["👤 Patient"])
-
-    INPUT["📥 Patient Input<br/>Symptoms • History • Questions"]
-
-    UPLOAD["📄 Documents & Images<br/>Reports • Prescriptions"]
-
-    API["⚡ FastAPI API Layer"]
-
-    INTAKE["📋 Intake Agent<br/>Structure Patient Information"]
-
-    MEMORY["🧠 CarePath Memory<br/>Retrieve Relevant Context"]
-
-    SUP["🤖 LangGraph Supervisor<br/>Coordinate Agent Workflow"]
-
-    RECORDS["📄 Medical Records Agent"]
-
-    VISION["👁️ Vision Agent"]
-
-    TIMELINE["🕐 Timeline Agent"]
-
-    SAFETY["🛡️ Safety Agent"]
-
-    REASONING["🧩 Clinical Reasoning Agent"]
-
-    EVIDENCE["📚 Evidence Agent<br/>RAG + Trusted Sources"]
-
-    REFERRAL["🩺 Explainable Referral<br/>Specialist Navigation"]
-
-    DOCTOR["👨‍⚕️ Doctor Bridge<br/>Summary + Case Questions"]
-
-    REVIEW{"👨‍⚕️ Expert Review<br/>Required?"}
-
-    CARE["📝 Personalized Care Plan"]
-
-    MEDICATION["💊 Medication Companion"]
-
-    FOLLOWUP["🔔 Follow-up Intelligence"]
-
-    TIMELINE_OUT["🕐 AI Patient Timeline"]
-
-    DB[("🗄️ PostgreSQL")]
-
-    DASHBOARD["📊 CarePath Dashboard"]
-
-    PATIENT --> INPUT
-    PATIENT --> UPLOAD
-
-    INPUT --> API
-    UPLOAD --> API
-
-    API --> INTAKE
-
-    INTAKE --> MEMORY
-
-    MEMORY --> SUP
-
-    SUP --> RECORDS
-    SUP --> VISION
-    SUP --> TIMELINE
-    SUP --> SAFETY
-
-    RECORDS --> SUP
-    VISION --> SUP
-    TIMELINE --> SUP
-    SAFETY --> SUP
-
-    SUP --> REASONING
-
-    REASONING --> EVIDENCE
-    EVIDENCE --> REASONING
-
-    REASONING --> REFERRAL
-
-    REFERRAL --> DOCTOR
-
-    DOCTOR --> REVIEW
-
-    REVIEW -->|Yes| DOCTOR
-    REVIEW -->|Continue| CARE
-
-    CARE --> MEDICATION
-    MEDICATION --> FOLLOWUP
-
-    FOLLOWUP --> SUP
-
-    SUP --> TIMELINE_OUT
-
-    MEMORY --> DB
-    TIMELINE_OUT --> DB
-    REFERRAL --> DB
-    DOCTOR --> DB
-    CARE --> DB
-    MEDICATION --> DB
-    FOLLOWUP --> DB
-
-    DB --> DASHBOARD
-    TIMELINE_OUT --> DASHBOARD
-    CARE --> DASHBOARD
-    FOLLOWUP --> DASHBOARD
-
-    DASHBOARD --> PATIENT
-```
-
-### 🔁 Data Transformation
-
-```mermaid
-flowchart LR
-
-    A["Raw Patient Information"]
-    B["Structured Patient Context"]
-    C["Shared CarePath State"]
-    D["AI Analysis + Evidence"]
-    E["Specialist Navigation"]
-    F["Doctor Review"]
-    G["Personalized Care"]
-    H["Continuous Follow-up"]
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    F --> G
-    G --> H
-    H --> C
-```
-
-### Core Data Flow
-
-```text
-Patient Input
-      ↓
-FastAPI
-      ↓
-Patient Context
-      ↓
-CarePath Memory
-      ↓
-LangGraph Supervisor
-      ↓
-Specialized Agents
-      ↓
-Clinical Reasoning
-      ↓
-Evidence / RAG
-      ↓
-Explainable Referral
-      ↓
-Doctor Bridge
-      ↓
-Personalized Care Plan
-      ↓
-Medication + Follow-up
-      ↓
-Patient Timeline
-      ↓
-Dashboard
-      ↓
-Continuous Care
-```
-
-> **The key distinction is that CarePath is not a one-way pipeline. Follow-up information and new patient interactions are fed back into the patient's persistent context, allowing subsequent workflows to build on the existing healthcare journey.**
-
-
-
----
+<a id="getting-started"></a>
 
 # 🛠 Local Setup
 
@@ -2181,6 +1630,7 @@ cd CarePath-AI
 ### Install Frontend
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
@@ -2228,25 +1678,18 @@ Never commit `.env` files or credentials.
 
 ---
 
-# 💼 Technology Stack
 
-| Layer | Technologies |
+<a id="live-demo"></a>
+
+# 🎬 Live Demo
+
+> **Note:** Add your actual deployment / demo links below before publishing.
+
+| Resource | Link |
 | :--- | :--- |
-| **Frontend** | React 19, TypeScript, Vite, React Router |
-| **UI & Visualization** | Tailwind CSS 4, Lucide React, Recharts, Motion, React Markdown |
-| **Backend API** | Python 3.13, FastAPI, Uvicorn, Pydantic |
-| **Multi-Agent Orchestration** | LangGraph, LangChain Core |
-| **AI & Language** | Google Gemini, structured AI service contracts, medical NLP workflows |
-| **Document Intelligence** | EasyOCR, OCR service contracts, document parsing |
-| **Computer Vision** | PyTorch, vision service contracts |
-| **Evidence & RAG** | ChromaDB, vector retrieval, Evidence Agent |
-| **Data Layer** | PostgreSQL, SQLAlchemy, AsyncPG, Alembic |
-| **Workflow Communication** | Server-Sent Events (SSE), REST APIs |
-| **Authentication & Security** | JWT, password hashing, authorization controls |
-| **Validation & Configuration** | Pydantic, Pydantic Settings |
-| **Testing** | Pytest, pytest-asyncio, API tests, LangGraph workflow tests |
-| **Infrastructure** | Docker, environment-based configuration |
-| **Logging & Observability** | Structlog |
+| 🌐 Live Application | `<add-deployment-url>` |
+| 🎥 Demo Video | `<add-demo-video-url>` |
+
 
 ---
 
@@ -2263,6 +1706,7 @@ Never commit `.env` files or credentials.
 
 ---
 
+
 # 🚀 Future Improvements
 
 - Real-time healthcare monitoring.
@@ -2274,6 +1718,7 @@ Never commit `.env` files or credentials.
 - Personalized treatment pathway recommendations.
 
 ---
+
 
 # 👥 Contributors
 
@@ -2287,6 +1732,7 @@ Never commit `.env` files or credentials.
 
 ---
 
+
 # 📜 License & Disclaimer
 
 CarePath AI is intended for healthcare navigation and educational support.
@@ -2294,6 +1740,7 @@ CarePath AI is intended for healthcare navigation and educational support.
 The platform does **not replace licensed medical professionals** and should not be used as a substitute for professional medical advice, diagnosis, or treatment.
 
 ---
+
 
 # 📌 Project Status
 
@@ -2308,3 +1755,4 @@ Healthcare Navigation System: Active
 ```
 
 Made with ❤️ by the CarePath AI Team.
+
