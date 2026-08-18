@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt pyproject.toml ./
-RUN pip install --no-cache-dir -r requirements.txt && pip install --no-cache-dir sqlalchemy psycopg2-binary asyncpg alembic redis "pyjwt[crypto]" "passlib[bcrypt,argon2]" langgraph structlog sse-starlette
+RUN pip install --no-cache-dir -r requirements.txt && pip install --no-cache-dir sqlalchemy psycopg2-binary asyncpg alembic redis supabase "pyjwt[crypto]" "passlib[bcrypt,argon2]" langgraph structlog sse-starlette
+
 
 
 COPY . .
