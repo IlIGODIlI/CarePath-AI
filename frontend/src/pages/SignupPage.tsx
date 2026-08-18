@@ -41,7 +41,7 @@ export default function SignupPage() {
       console.error('Registration error:', err);
       setError(
         err.message === 'Failed to fetch'
-          ? 'Cannot connect to backend server. Ensure the API service is running on http://localhost:8000.'
+          ? 'Cannot connect to backend server. Ensure the API service is running at https://carepath-ai-production-508e.up.railway.app.'
           : err.message || 'Registration failed. Please try again.'
       );
     } finally {
