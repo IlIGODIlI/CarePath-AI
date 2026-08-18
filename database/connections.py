@@ -22,19 +22,25 @@ if DATABASE_URL:
     if "+asyncpg" in DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace("+asyncpg", "", 1)
 
-        
-    engine = create_engine(
-        DATABASE_URL,
-        pool_pre_ping=True,
-        pool_recycle=300,
-        pool_size=10,
-        max_overflow=20,
-    )
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    try:
+        engine = create_engine(
+            DATABASE_URL,
+            pool_pre_ping=True,
+            pool_recycle=300,
+            pool_size=10,
+            max_overflow=20,
+            connect_args={"connect_timeout": 15}
+        )
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    except Exception as err:
+        print(f"WARNING: Database engine creation error: {err}")
+        engine = None
+        SessionLocal = None
 else:
     print("WARNING: DATABASE_URL not found in environment variables.")
     engine = None
     SessionLocal = None
+
 
 def get_db():
     """Dependency to get a database session (useful for FastAPI etc.)"""
